@@ -1,0 +1,17 @@
+{
+  "name": "automatapoeia",
+  "version": "0.0.0",
+  "description": "User editable cellular automata.",
+  "main": "node-test.js",
+  "dependencies": {
+    "gulp": "^3.9.1"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Oakland Peters",
+  "license": "ISC"
+}
