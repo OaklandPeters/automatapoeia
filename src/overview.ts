@@ -12,25 +12,20 @@ export interface ActionUI {
 }
 
 
-export interface Kind {
+export class Kind {
 	// A kind of agent. Corresponds to a single graphic.
-	name: string;
-	graphicId: number;
+	constructor(
+		public name: string,
+		public graphicId: number
+	) { }
+	register = function(){
+		Kinds[this.name] = this;
+	}
 }
 
-class Empty implements Kind {
-	name: "Empty";
-	graphicId: 0;
-}
+export var Kinds: { [prop: string]: Kind } = {};
 
-
-var Kinds: { [prop: string]: Kind; } = {};
-for (let _kind of [Empty]) {
-	name = _kind.name;;
-	Kinds[(_kind.name)] = Empty;
-}
-[Empty].map((_kind) => Kinds[_kind.name] = Empty);
-
+export var Empty = new Kind("Empty", 0).register();
 
 class Dimensions {
 	x: number;
