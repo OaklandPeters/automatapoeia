@@ -1,0 +1,23 @@
+{
+  "name": "automatapoeia",
+  "version": "0.0.1",
+  "description": "User editable cellular automata.",
+  "main": "build/es5/server.js",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "jquery": "^2.2.3",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "babel": "^6.5.2",
+    "babel-preset-es2015": "^6.9.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-browserify": "^0.5.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Oakland Peters",
+  "license": "MIT"
+}
