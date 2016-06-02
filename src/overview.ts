@@ -1,16 +1,17 @@
+import * as _ from "underscore";
 
-export interface Action {
-	// Conditional updates, evaluated against each locus in the grid
-	// Examples: if_neighbor, if_random, move_to, 
+
+
+export interface Kind {
 	name: string;
-	actionUI: ActionUI;
-	step(agent: Agent, grid: Grid): Grid;
+	graphId: number;
+	register: () => Kind;
 }
 
-export interface ActionUI {
-	// UI for setting action rules
+var Kinds = new Array();
+Kinds.register = function (kind: Kind) {
+	this.push(kind);
 }
-
 
 export class Kind {
 	// A kind of agent. Corresponds to a single graphic.
@@ -27,38 +28,13 @@ export var Kinds: { [prop: string]: Kind } = {};
 
 export var Empty = new Kind("Empty", 0).register();
 
-class Dimensions {
-	x: number;
-	y: number;
-	z: number;
-}
 
-class Location {
-	x: number;
-	y: number;
-	z: number;
-}
 
-export interface Agent {
-	// Single object occupying a single square.
-	location: Location;
-	kind: Kind;
-}
 
-export interface Grid {
-	dimensions: Dimensions;
-	agents: Array<Agent>;
-	initialize(kindGen?: randomKindGenerator): Grid;
-	step(): Grid;
-	html: HTMLScriptElement;  //document.getElementById("grid");
-	container: HTMLScriptElement;
-	background: HTMLScriptElement;
-	css: CSS;
-	getNeighbors(agent): Array<Agent>;
-	updateAgents(): Grid;
-	neighborsByKind(agent, kind): Array<Agent>;
-	getAgent(location: Location): Agent;
-}
+
+
+
+
 
 // Grid
 //    Methods: step, updateSize, updateAgents,
@@ -78,13 +54,7 @@ export interface randomKindGenerator{
 	(seed?: number) : Kind;
 }
 
-export interface Editor {
-	createTextArea;
-}
 
-export interface Model {
-
-}
 // Editor
 //   createTextArea
 //   createTitle
