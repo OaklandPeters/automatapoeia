@@ -2,8 +2,10 @@
   "name": "automatapoeia",
   "version": "0.0.1",
   "description": "User editable cellular automata.",
-  "main": "build/es5/server.js",
+  "main": "build/es5/main.js",
   "dependencies": {
+    "angular": "^1.5.5",
+    "bootstrap": "^3.3.6",
     "gulp": "^3.9.1",
     "jquery": "^2.2.3",
     "underscore": "^1.8.3"

@@ -4,7 +4,7 @@ var exec = require('child_process').exec;
 var babel = require('gulp-babel');
 
 gulp.task('build', function(callback){
-    exec('tsc', function(error, stdout, stderr) {
+    exec('tsc -p .', function(error, stdout, stderr) {
         if(stdout){ console.log(stdout) }
         if(stderr){ console.log(stderr) }
 
@@ -25,7 +25,7 @@ gulp.task('es5', ['build'], function() {
 });
 
 gulp.task('browserify', ['es5'], function(){
-	return gulp.src('build/es5/src/start.js')
+	return gulp.src('build/es5/main.js')
 		.pipe(browserify())
 		.pipe(gulp.dest('build/merged/'))
 });

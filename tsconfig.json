@@ -11,6 +11,7 @@
     ],
     "files": [
         "typings/tsd.d.ts",
-        "src/server.ts"
+        "src/main.ts",
+        "src/overview.ts"
     ]
 }

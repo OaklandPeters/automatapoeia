@@ -7,6 +7,18 @@
   "installed": {
     "node/node.d.ts": {
       "commit": "e0abafb1a6ff652f7ff967120e312d5c1916eaef"
+    },
+    "angularjs/angular.d.ts": {
+      "commit": "edb64e4a35896510ce02b93c0bca5ec3878db738"
+    },
+    "jquery/jquery.d.ts": {
+      "commit": "edb64e4a35896510ce02b93c0bca5ec3878db738"
+    },
+    "bootstrap/bootstrap.d.ts": {
+      "commit": "edb64e4a35896510ce02b93c0bca5ec3878db738"
+    },
+    "underscore/underscore.d.ts": {
+      "commit": "edb64e4a35896510ce02b93c0bca5ec3878db738"
     }
   }
 }
