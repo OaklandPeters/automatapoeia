@@ -1,8 +1,16 @@
 
 export interface KindInterface {
 	name: string;
-	graphId: number;
-	register: () => KindInterface;
+	display: string;
+	graphicId: number;
+	register: () => void;
+}
+
+export interface AllKindsInterface {
+	kinds: { [name: string]: KindInterface };
+	empty: KindInterface;
+	add(kind: KindInterface): this;
+	random(distribution?: number[]): KindInterface;
 }
 
 export interface AgentInterface {
