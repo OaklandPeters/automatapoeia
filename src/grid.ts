@@ -1,3 +1,6 @@
+import {PointInterface, GridInterface} from './interfaces';
+
+
 /**
  * Point class hierarchy is unnecessarily complex,
  * as an exercise in learning TypeScript/ES6 classes
@@ -7,29 +10,18 @@
  *    Allows: Reflect.construct(MyPoint: Point, values: number[])
  *    http://babeljs.io/docs/usage/polyfill/
  */
-export interface Point {
-	toString: () => string;
-	// Additional constructors, so they should be static, but interfaces can't specify static
-	// ... UPDATE: not doing this, because it doesn't play well with classic OOP
-	// fromPoint(point: this): this;
-	// zero(): this;
-	// lift(values: Array<number>): Point;
-	map(func: (value: number, index?: number, thisValues?: Array<number>) => number): this;
-	add(point: this): this;
-	invert(): this;
-	subtract(point: this): this;
-	compare(point: this, delta: number): Boolean;
-}
 
 
-export abstract class PointBase implements Point {
+export abstract class PointBase implements PointInterface {
+	/**
+	 * Base class shared by all point implementations.
+	 * Concrete point classes vary by their dimensionality.
+	 */
 	values: Array<number>;
 	constructor(values: Array<number>) {
 		this.values = values;
 	};
 
-	// Constructors are not possible to Type currently, because 'this'
-	// is invalid for subtle reasons
 	abstract fromArray(values: number[]): this;
 	abstract zero(): this;
 
@@ -73,7 +65,9 @@ export abstract class PointBase implements Point {
 }
 
 
-
+/**
+ * Concrete point classes
+ */
 export class Point1D extends PointBase {
 	fromArray(values: number[]): this {
 		// return new this.constructor(values);
@@ -90,7 +84,7 @@ export class Point1D extends PointBase {
 	}
 }
 
-export class Point2D extends Point1D {
+export class Point2D extends PointBase {
 	fromArray(values: number[]): this {
 		return new Point2D(values) as this;
 	}
@@ -118,4 +112,8 @@ export class Point3D extends Point2D {
 	set z(value: number) {
 		this.values[2] = value;
 	}
+}
+
+export class GridBase implements Grid {
+
 }
