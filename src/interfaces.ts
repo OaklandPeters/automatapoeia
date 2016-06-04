@@ -1,4 +1,5 @@
 
+
 export interface KindInterface {
 	name: string;
 	display: string;
@@ -6,11 +7,29 @@ export interface KindInterface {
 	register: () => void;
 }
 
+export interface KindsDictInterface {
+	[name: string]: KindInterface;
+}
+
 export interface AllKindsInterface {
-	kinds: { [name: string]: KindInterface };
-	empty: KindInterface;
+	empty(): KindInterface | void;
 	add(kind: KindInterface): this;
 	random(distribution?: number[]): KindInterface;
+	all(): KindInterface[];
+}
+
+export type AgentDistP = [number, AgentInterface];
+export interface DistributionInterface {
+	integral(): this;
+	[index: number]: AgentDistP;
+}
+
+export interface randomKindGeneratorInterface {
+	(seed?: number): KindInterface;
+}
+
+export interface makeRandomKindGeneratorInterface {
+	(distribution: DistributionInterface): randomKindGeneratorInterface;
 }
 
 export interface AgentInterface {
@@ -21,6 +40,7 @@ export interface AgentInterface {
 
 
 export interface PointInterface {
+	agent: AgentInterface;
 	map(func: (value: number, index?: number, thisValues?: Array<number>) => number): this;
 	add(PointInterface: this): this;
 	invert(): this;
@@ -33,9 +53,8 @@ export interface PointInterface {
 	toString(): string;
 }
 
-export interface randomKindGenerator {
-	(): KindInterface;
-}
+
+
 
 export interface GridInterface {
 	makePoint(values: number[]): PointInterface;
@@ -76,3 +95,5 @@ export interface EditorInterface {
 export interface ModelInterface {
 
 }
+
+
