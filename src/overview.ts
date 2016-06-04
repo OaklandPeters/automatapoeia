@@ -2,40 +2,6 @@ import * as _ from "underscore";
 
 
 
-export interface Kind {
-	name: string;
-	graphId: number;
-	register: () => Kind;
-}
-
-var Kinds = new Array();
-Kinds.register = function (kind: Kind) {
-	this.push(kind);
-}
-
-export class Kind {
-	// A kind of agent. Corresponds to a single graphic.
-	constructor(
-		public name: string,
-		public graphicId: number
-	) { }
-	register = function(){
-		Kinds[this.name] = this;
-	}
-}
-
-export var Kinds: { [prop: string]: Kind } = {};
-
-export var Empty = new Kind("Empty", 0).register();
-
-
-
-
-
-
-
-
-
 // Grid
 //    Methods: step, updateSize, updateAgents,
 //		countNeighbors(agent, stateID),

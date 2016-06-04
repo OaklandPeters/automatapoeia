@@ -1,15 +1,20 @@
-import {PointInterface, GridInterface, AgentInterface, KindInterface} from './interfaces';
-
-
 /**
  * Point class hierarchy is unnecessarily complex,
  * as an exercise in learning TypeScript/ES6 classes
+ *
+ * Todo:
+ * [] Make Point extend Array
+ * [] Replace PointBase.agent: AgentInterface -> Agent from agents.ts
+ *
  *
  * Improvements:
  * [] Reflect to access constructor. 'npm install babel-polyfill --save'
  *    Allows: Reflect.construct(MyPoint: Point, coordinates: number[])
  *    http://babeljs.io/docs/usage/polyfill/
  */
+
+import {PointInterface, GridInterface, AgentInterface, KindInterface} from './interfaces';
+import {AllKinds} from './agents';
 
 
 export abstract class PointBase implements PointInterface {
@@ -18,12 +23,10 @@ export abstract class PointBase implements PointInterface {
 	 * Concrete point classes vary by their dimensionality.
 	 */
 	coordinates: Array<number>;
+	agent: AgentInterface;
 	constructor(coordinates: Array<number>, agent?: AgentInterface) {
 		this.coordinates = coordinates;
-		this.agent = _default(agent, Kinds.default())
-		if (agent === undefined) {
-
-		}
+		this.agent = agent || AllKinds.default();
 	};
 
 	abstract fromArray(coordinates: number[]): this;
@@ -122,3 +125,15 @@ export abstract class GridBase<GPoint> implements GridInterface {
 
 	}
 }
+
+/*
+function Init3DimensionalArray(xmax, ymax, zmax, def) {
+    var r, x, y, z;
+    for (r = [], x = 0; x < xmax; x++)
+        for (r [x] = [], y = 0; y < ymax; y++)
+             for (r [x][y] = [], z = 0; z < zmax; x++)
+                  r [x][y][z] = def;
+    return r;
+}
+var my3DimArray = Init3DimensionalArray(5, 4, 3, 0);
+ */
