@@ -7,40 +7,21 @@ export interface KindInterface {
 	register: () => void;
 }
 
-export interface KindsDictInterface {
-	[name: string]: KindInterface;
-}
-
 export interface AllKindsInterface {
-	empty(): KindInterface | void;
-	add(kind: KindInterface): this;
-	random(distribution?: number[]): KindInterface;
-	all(): KindInterface[];
+	/* Array of all existing Kinds */
+	empty(): KindInterface;
+	get(name: string): KindInterface;
+	[index: number]: KindInterface;
 }
 
-export type AgentDistP = [number, AgentInterface];
+export type KindDistP = [number, KindInterface];
+
 export interface DistributionInterface {
 	integral(): this;
-	[index: number]: AgentDistP;
+	[index: number]: KindDistP;
 }
-
-export interface randomKindGeneratorInterface {
-	(seed?: number): KindInterface;
-}
-
-export interface makeRandomKindGeneratorInterface {
-	(distribution: DistributionInterface): randomKindGeneratorInterface;
-}
-
-export interface AgentInterface {
-	// Single object occupying a single square.
-	location: PointInterface;
-	kind: KindInterface;
-}
-
 
 export interface PointInterface {
-	agent: AgentInterface;
 	map(func: (value: number, index?: number, thisValues?: Array<number>) => number): this;
 	add(PointInterface: this): this;
 	invert(): this;
@@ -55,25 +36,24 @@ export interface PointInterface {
 
 
 
-
 export interface GridInterface {
-	makePoint(values: number[]): PointInterface;
-	// Agents is an array of arbitary dimensionality, holding objects of type AgentInterface
-	// This is impossible to define in any language without recursive types (so... Haskell and OCaml)
-	agents: Array<any>;
-	getAgent(coordinates: number[]): AgentInterface;
-	setAgent(coordinates: number[], agent: AgentInterface): void;
 
-	initialize(kindGen?: randomKindGenerator): this;
+	makePoint(coordinates: number[]): PointInterface;
+	getPoint(coordinates: number[]): PointInterface;
+	setPoint(coordinates: number[], kind: KindInterface): void;
+
+
+	initialize(distribution: CumulativeDistribution<KindInterface>): this;
 	step(): this;
+	updatePoints(): this;
+	getNeighbors(point: PointInterface): Array<PointInterface>;
+
+	map(func: (point: PointInterface) => PointInterface): this;
+
 	html: HTMLScriptElement;  //document.getElementById("Grid");
 	container: HTMLScriptElement;
 	background: HTMLScriptElement;
 	css: CSS;
-	getNeighbors(agent: AgentInterface): Array<AgentInterface>;
-	updateAgents(): this;
-	neighborsByKind(agent: AgentInterface, kind: KindInterface): Array<AgentInterface>;
-	getAgent(location: Location): AgentInterface;
 }
 
 export interface ActionInterface {
@@ -81,7 +61,7 @@ export interface ActionInterface {
 	// Examples: if_neighbor, if_random, move_to, 
 	name: string;
 	actionUI: ActionUIInterface;
-	step(agent: AgentInterface, grid: GridInterface): GridInterface;
+	step(point: PointInterface, grid: GridInterface): GridInterface;
 }
 
 export interface ActionUIInterface {
@@ -96,4 +76,6 @@ export interface ModelInterface {
 
 }
 
+// Utility type, used to appease TypeScript when calling this.constructor from methods.
+type Buildable<T> = { new (...args: any[]): T } & Function;
 
