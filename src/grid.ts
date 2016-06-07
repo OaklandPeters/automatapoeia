@@ -1,39 +1,37 @@
 /**
  * Point class hierarchy is unnecessarily complex,
  * as an exercise in learning TypeScript/ES6 classes
- *
- * Todo:
- * [] Make Point extend Array
- * [] Replace PointBase.agent: AgentInterface -> Agent from agents.ts
- *
- *
- * Improvements:
- * [] Reflect to access constructor. 'npm install babel-polyfill --save'
- *    Allows: Reflect.construct(MyPoint: Point, coordinates: number[])
- *    http://babeljs.io/docs/usage/polyfill/
  */
 
-import {PointInterface, GridInterface, AgentInterface, KindInterface} from './interfaces';
-import {AllKinds} from './agents';
+import {PointInterface, GridInterface, KindInterface, Buildable} from './interfaces';
+import {Kind, AllKinds, CumulativeDistribution} from './agents';
 
 
-export abstract class PointBase implements PointInterface {
+
+// export class PointBase implements PointInterface {
+// export class PointBase implements ConstructibePointInterface {
+export class PointBase implements ConstructiblePoint {
 	/**
 	 * Base class shared by all point implementations.
 	 * Concrete point classes vary by their dimensionality.
 	 */
-	coordinates: Array<number>;
-	agent: AgentInterface;
-	constructor(coordinates: Array<number>, agent?: AgentInterface) {
-		this.coordinates = coordinates;
-		this.agent = agent || AllKinds.default();
-	};
+	constructor(
+		public coordinates: Array<number>,
+		public kind: KindInterface = AllKinds.empty()
+	) { };
 
-	abstract fromArray(coordinates: number[]): this;
-	abstract zero(): this;
+	fromArray(coordinates: number[]): this {
+		return new (this.constructor as Buildable<this>)(this.coordinates, AllKinds.empty());
+	}
 
 	fromPoint(point: this): this {
-		return this.fromArray(this.coordinates);
+		// return new this.constructor(this.coordinates, this.kind);
+		return new (this.constructor as Buildable<this>)(point.coordinates, point.kind);
+	}
+
+	zero(): this {
+		return new (this.constructor as Buildable<this>)();
+		// return new this.constructor([0, 0], AllKinds.empty())
 	}
 
 	toString(): string {
@@ -43,12 +41,20 @@ export abstract class PointBase implements PointInterface {
 		return "[${inner}]";
 	}
 
-	map(func: (value: number, index: number, thisValues: Array<number>) => number): this {
-		return this.fromArray(
+	map(func: (value: number, index?: number, thisValues?: Array<number>) => number): this {
+		/*
+		Map over the points, but not the kind.
+		This is currently immutable, which is inefficient. Either adopt a library for more
+		efficiency, or change this to mutate in-place.
+		*/
+		return this.constructor(
+			// This function in map looks complicated, but this is the actual call-signature
+			// of Javascript's Built-in-map
 			this.coordinates.map(
 				(val: number, ind: number, array: number[]) => func(val, ind, this.coordinates)
-			)
-		);
+			),
+			this.kind
+		)
 	}
 
 	invert(): this {
@@ -74,55 +80,46 @@ export abstract class PointBase implements PointInterface {
 
 /**
  * Concrete point classes
+ * Distinct to prevent mixing them up together, and to allow pairing the class with Grid classes.
  */
 export class Point2D extends PointBase {
-	fromArray(coordinates: number[]): this {
-		return new Point2D(coordinates) as this;
-	}
-	zero(): this {
-		return new Point2D([0, 0]) as this;
+	constructor(coordinates: Array<number> = [0, 0], kind: KindInterface = AllKinds.empty()) {
+		assert(coordinates.length == 2)
+		super(coordinates, kind)
 	}
 }
 
-export class Point3D extends Point2D {
-	fromArray(coordinates: number[]): this {
-		return new Point3D(coordinates) as this;
-	}
-	zero(): this {
-		return new Point3D([0, 0, 0]) as this;
+export class Point3D extends PointBase {
+	constructor(coordinates: Array<number> = [0, 0, 0], kind: KindInterface = AllKinds.empty()) {
+		assert(coordinates.length == 3)
+		super(coordinates, kind)
 	}
 }
 
 
 
+/**
+ * Grid Classes
+ */
+export abstract class GridBase<PointClass extends PointBase> implements GridInterface {
+	Point: PointClass;
+	size: number[];
+	points: Array<any | PointClass>;  // Recursive data type. type T = Array<T> | T;
 
-
-export interface GridInterface {
-	makePoint(coordinates: number[]): PointInterface;
-	// Agents is an array of arbitary dimensionality, holding objects of type AgentInterface
-	// This is impossible to define in any language without recursive types (so... Haskell and OCaml)
-	agents: Array<any>;
-	getAgent(coordinates: number[]): AgentInterface;
-	setAgent(coordinates: number[], agent: AgentInterface): void;
-
-	initialize(kindGen?: randomKindGenerator): this;
-	step(): this;
-	html: HTMLScriptElement;  //document.getElementById("Grid");
-	container: HTMLScriptElement;
-	background: HTMLScriptElement;
-	css: CSS;
-	getNeighbors(agent: AgentInterface): Array<AgentInterface>;
-	updateAgents(): this;
-	neighborsByKind(agent: AgentInterface, kind: KindInterface): Array<AgentInterface>;
-	getAgent(location: Location): AgentInterface;
-}
-
-export abstract class GridBase<GPoint> implements GridInterface {
-	abstract makePoint(coordinates: number[]): GPoint;
-	abstract map(func: (agent: AgentInterface) => AgentInterface): this;
-	
-	set(): this {
-
+	makePoint(coordinates: number[]): PointClass {
+		return this.Point.constructor.apply({}, coordinates);
+	}
+	protected fetch(coordinates: number[]): any {
+		assert(this.size.length >= coordinates.length);
+		let lense = this.points;
+		coordinates.forEach((coordinate) => lense = lense[coordinate]);
+		return lense;
+	}
+	getPoint(coordinates: number[]): PointClass {
+		return this.fetch(coordinates) as any as PointClass;
+	}
+	setPoint(coordinates: number[], kind: Kind): PointClass {
+		this.fetch(coordinates) = kind;
 	}
 }
 
@@ -137,3 +134,40 @@ function Init3DimensionalArray(xmax, ymax, zmax, def) {
 }
 var my3DimArray = Init3DimensionalArray(5, 4, 3, 0);
  */
+
+
+function product<T>(...pools: Array<Array<T>>): Array<Array<T>> {
+	/* Cartesian product of arrays.
+	product(['A', 'B', 'C', 'D'], ['x', 'y']) --> [['A', 'x'], ['A', 'y'], ['B', 'x'], ...]
+	*/
+	let accumulator: Array<Array<T>> = [[]];
+	pools.forEach(function(pool) {
+		var temp: Array<Array<T>> = [];
+		accumulator.forEach(function(prior) {
+			pool.forEach(function(entry) {
+				let _t = prior.slice();
+				_t.push(entry)
+				temp.push(_t)
+			});
+		})
+		accumulator = temp;
+	})
+	return accumulator;
+}
+
+
+function range(start: number, stop: number, step: number = 1) {
+	/* Modified from Underscore's range() function. */
+    let length = Math.max(Math.ceil((stop - start) / step), 0);
+    let range = Array(length);
+    for (let idx = 0; idx < length; idx++ , start += step) {
+		range[idx] = start;
+    }
+    return range;
+};
+
+function assert(value: Boolean, message: string = "Invalid assertion.") {
+	if (!value) {
+		throw Error(message)
+	}
+}
