@@ -71,10 +71,48 @@ export interface ActionUIInterface {
 export interface EditorInterface {
 	createTextArea: () => EditorInterface;
 }
+// Editor
+//   createTextArea
+//   createTitle
+//   createStateUI
+//   createStatesUI
+//   createActionsUI
+//   createActionUI
+//   ... example has a bunch of other stuff I don't understand the purpose of yet
+//      createProportions, createNumber, createSelector, createStateSelector,
+//      createLabel, createActionAdder,
+
+
 
 export interface ModelInterface {
 
 }
+// Model
+//   Controls everything, and contains timer loop
+//   Methods: play(), pause(), tick(), 
+//   setInterval(Model.tick,1000/30); // 30 FPS, watchu gonna do about it
+//   Helper methods: getStateFromID(stateID), removeStateByID(stateID), generateNewID(), generateNewEmoji()
+//   Attributes: isPlaying, emojiIndex, emoji[]
+
+
+export interface GameState {
+	/* Collection of class-less game-state variables. Interacts with save-state.
+	I haven't determined the role of this yet.
+	*/
+}
+
+// Save
+//    Used to save state, rules, and emoji
+//    ... need external dependency for this (firebase?) something for data serialization to file
+export interface SaveInterface {
+	import(path: string): GameState;
+	export(path: string): void;
+}
+
+// UI
+//     Mouse controls, keyboard controls, 
+
+
 
 // Utility type, used to appease TypeScript when calling this.constructor from methods.
 type Buildable<T> = { new (...args: any[]): T } & Function;
