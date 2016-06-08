@@ -1,4 +1,8 @@
+import {CumulativeDistribution} from './distribution';
 
+/* Placeholder, for when I don't know what will go there, and haven't tried yet.
+	Uses 'void', so interacting with that type should always fail. */
+export type Placeholder = void;
 
 export interface KindInterface {
 	name: string;
@@ -14,15 +18,19 @@ export interface AllKindsInterface {
 	[index: number]: KindInterface;
 }
 
-export type KindDistP = [number, KindInterface];
+export type Likelyhood<T> = [number, T];
+
+export type KindDistP = Likelyhood<KindInterface>;
 
 export interface DistributionInterface {
 	integral(): this;
 	[index: number]: KindDistP;
 }
 
+export type CoordinatesInterface = Array<number>;
+
 export interface PointInterface {
-	map(func: (value: number, index?: number, thisValues?: Array<number>) => number): this;
+	mapCoordinates(func: (value: number, index?: number, thisValues?: Array<number>) => number): this;
 	add(PointInterface: this): this;
 	invert(): this;
 	subtract(PointInterface: this): this;
@@ -48,7 +56,7 @@ export interface GridInterface {
 	updatePoints(): this;
 	getNeighbors(point: PointInterface): Array<PointInterface>;
 
-	map(func: (point: PointInterface) => PointInterface): this;
+	map(func: (point: PointInterface, index?: CoordinatesInterface, thisValues?: this) => PointInterface): this;
 
 	html: HTMLScriptElement;  //document.getElementById("Grid");
 	container: HTMLScriptElement;
@@ -57,63 +65,115 @@ export interface GridInterface {
 }
 
 export interface ActionInterface {
-	// Conditional updates, evaluated against each locus in the grid
-	// Examples: if_neighbor, if_random, move_to, 
+	/**
+	 * An expression about a conditional action rule, evaluated against
+	 * each point in the grid, during each time-step.
+	 * 
+	 * Examples: if_neighbor, if_random, move_to,
+	 */
 	name: string;
 	actionUI: ActionUIInterface;
-	step(point: PointInterface, grid: GridInterface): GridInterface;
+	step(point: PointInterface, grid: GridInterface): PointInterface;
+	register(): void;
+}
+
+export interface OrderedActionsInterface {
+	/** 
+	 * Array of all existing action rules, in an order.
+	 * 'allActions' returns actions without an order.
+	 */
+	[index: number]: ActionInterface;
 }
 
 export interface ActionUIInterface {
-	// UI for setting action rules
+	/**
+	 * User-interface for an expression on a conditional action rule.
+	 * If {X} then trigger {Y} on {Z}
+	 *
+	 * ... I heavily suspect this should be a little domain-specific language.
+	 */
+	action: ActionInterface;
+}
+
+export interface LabelInterface {
+	/* Block of non-interactive text inside the dynamic UI */
+	text: string;
 }
 
 export interface EditorInterface {
-	createTextArea: () => EditorInterface;
-}
-// Editor
-//   createTextArea
-//   createTitle
-//   createStateUI
-//   createStatesUI
-//   createActionsUI
-//   createActionUI
-//   ... example has a bunch of other stuff I don't understand the purpose of yet
-//      createProportions, createNumber, createSelector, createStateSelector,
-//      createLabel, createActionAdder,
+	createTextArea(): this;
+	createTitle(title: string): this;
+	createStateUI(): this;
+	createActionsUI(actions: ActionInterface[]): ActionUIInterface;
+	createActionUI(action: ActionInterface): this;
+	createLabel(text: string): LabelInterface;
 
-
-
-export interface ModelInterface {
-
-}
-// Model
-//   Controls everything, and contains timer loop
-//   Methods: play(), pause(), tick(), 
-//   setInterval(Model.tick,1000/30); // 30 FPS, watchu gonna do about it
-//   Helper methods: getStateFromID(stateID), removeStateByID(stateID), generateNewID(), generateNewEmoji()
-//   Attributes: isPlaying, emojiIndex, emoji[]
-
-
-export interface GameState {
-	/* Collection of class-less game-state variables. Interacts with save-state.
-	I haven't determined the role of this yet.
-	*/
+	// Posibly, not sure if I need these
+	// Or they might possibly be better located under ActionUIInterface
+	// Note... these will *not* return 'this' - likely returning a new class TBA
+	createLikelyhoodSelector(): this;
+	createKindSelector(): this;
+	createNumberSelector(): this;
+	createDirectionSelector(): this; // Highly speculative. Also, a pain in 3D
+	// Action adder would be the button to add a new ActionUI
+	createActionAdder(): this;
 }
 
-// Save
-//    Used to save state, rules, and emoji
-//    ... need external dependency for this (firebase?) something for data serialization to file
+
+
+export interface TimeInterface {
+	/**
+	 * Controls everything, and contains the timer loop.
+	 */
+	play(): this;
+	pause(): this;
+	isPlaying: Boolean
+	// Interval should be a getter/setter property, which updates:
+	// setInterval(this.tick, 1000/this.interval)
+	interval: number;
+	tick(): this;
+	tickCount: number;
+	grid: GridInterface;
+	allKinds: AllKindsInterface;
+	allActions: OrderedActionsInterface;
+	gameState: GameStateInterface;
+
+}
+
+export interface ControlsInterface {
+	/**
+	 * Mouse controls, and keyboard controls.
+	 * Not sure how to organize this yet.
+	 */
+	mouse: Placeholder;
+	keyboard: Placeholder;
+}
+
+export interface GameStateInterface {
+	/**
+	 * Collection of class-less game-state variables. Interacts with save-state.
+	 * This is what is written to JSON as part of the save/load process.
+	 * All state-information should be indexable here.
+	 */
+	kinds: AllKindsInterface;
+	grid: GridInterface;
+	time: TimeInterface;
+	controls: ControlsInterface;
+}
+
 export interface SaveInterface {
-	import(path: string): GameState;
+	/**
+	 * Used to save time-state, grid, rules, and kinds
+	 */
+	import(path: string): GameStateInterface;
 	export(path: string): void;
 }
 
-// UI
-//     Mouse controls, keyboard controls, 
 
+/*  Utility types, used to appease TypeScript when calling this.constructor from methods. */
+export interface Constructible<T> {
+	new (...args: any[]): T;
+};
 
-
-// Utility type, used to appease TypeScript when calling this.constructor from methods.
-type Buildable<T> = { new (...args: any[]): T } & Function;
+export type Buildable<T> = Constructible<T> & Function;
 
