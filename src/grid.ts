@@ -7,7 +7,7 @@
 import {PointInterface, GridInterface, KindInterface, OrderedActionsInterface, ActionInterface, CoordinatesInterface, Buildable} from './interfaces';
 import {Kind, AllKinds} from './agents';
 import {CumulativeDistribution} from './distribution';
-
+import {assert} from './support';
 
 
 export class PointBase implements PointInterface {
@@ -110,45 +110,91 @@ export class Point3D extends PointBase {
 /**
  * Grid Classes
  */
-export class GridBase<PointClass extends PointBase> implements GridInterface {
+
+
+
+
+
+//
+//		Current problem, GridInterface not knowing that it's inner type implements PointInterface
+//
+
+export interface GridInterface<PointClass extends PointInterface> {
+	initialize(distribution: CumulativeDistribution<KindInterface>): this;
+	step(actions: OrderedActionsInterface): this;
+	map(func: (point: PointClass, index?: CoordinatesInterface, thisValues?: this) => PointClass): this;
+	// Point interaction methods
+	makePoint(coordinates: number[]): PointClass;
+	getPoint(coordinates: number[]): PointClass;
+	setPoint(coordinates: number[], kind: KindInterface): void;
+	getNeighbors(point: PointClass): Array<PointClass>;
+	// HTML/CSS methods
+	html: HTMLScriptElement;  //document.getElementById("Grid");
+	container: HTMLScriptElement;
+	background: HTMLScriptElement;
+	css: CSS;
+}
+
+export function makeGrid<PointClass, GridClass>(sizes: CoordinatesInterface){
+	/**
+	 * @todo: This function should go onto model or gamestate, or similar. It involves all information necessary to setup an initialized grid.
+	 * 
+	 */
+	
+}
+
+
+export class GridBase<PointClass extends PointInterface> implements GridInterface<PointClass> {
 	Point: PointClass;
-	size: number[];
+	sizes: CoordinatesInterface;
 	points: Array<any | PointClass>;  // Recursive data type. type T = Array<T> | T;
 
-
 	// Constructors
-	// It's not conventional for abstract classes to have constructors...
-	// So I'll likely either move these into child classes, or make this class no longer be abstract
+	constructor(size: CoordinatesInterface, Point: PointClass) {
+
+	}
+	fromPoints(sizes: CoordinatesInterface, points: PointClass) {
+
+	}
+
 	fromArray(points: PointClass[]) {
 		return new (this.constructor as Buildable<this>)(...points);
 	}
 
-	makePoint(coordinates: CoordinatesInterface): PointClass {
-		return this.Point.constructor.apply({}, coordinates);
-	}
-	protected fetch(coordinates: CoordinatesInterface): any {
-		assert(this.size.length >= coordinates.length);
+
+	// Utility methods - used for access deeply nested points
+	protected getter(coordinates: CoordinatesInterface): any {
+		assert(this.sizes.length >= coordinates.length);
 		let lense = this.points;
 		coordinates.forEach((coordinate) => lense = lense[coordinate]);
 		return lense;
 	}
 	protected setter(coordinates: CoordinatesInterface, point: PointClass): void {
-		/** Path based setter.
-		var grid = new Grid(....)
-		grid.setter([0, 1, 4], new Point3D(...))
-		*/
 		let front = coordinates.slice(0, -1);
 		let last = coordinates.slice(-1)[0];
-		let deepestArray = this.fetch(front);
+		let deepestArray = this.getter(front);
 		deepestArray[last] = point;
 	}
+	// Point functions
+	makePoint(coordinates: CoordinatesInterface): PointClass {
+		return this.Point.constructor.apply({}, coordinates);
+	}
 	getPoint(coordinates: CoordinatesInterface): PointClass {
-		return this.fetch(coordinates) as any as PointClass;
+		return this.getter(coordinates) as any as PointClass;
 	}
 	setPoint(coordinates: CoordinatesInterface, kind: Kind): void {
-		let point = this.fetch(coordinates);
+		let point = this.getter(coordinates);
 		point
 	}
+	getNeighbors(point: PointClass): PointClass[] {
+		let accumulator: PointClass[] = [];
+
+		point.mapCoordinates(function(coord: number, index: number, coordinates: CoordinatesInterface): number {
+			let before = coordinates.slice();
+			// let before: CoordinatesInterface = coordinates.slice()[index] = coord - 1;
+		})
+	}
+
 	map(pointFunction: (point: PointInterface, index?: CoordinatesInterface, thisContainer?: this) => PointInterface): this {
 		// Proxies the pointFunction call down the array of points.
 		// This should be chained downward until it hits a 'Point' - whose map function will apply it

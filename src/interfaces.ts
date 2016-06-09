@@ -43,21 +43,16 @@ export interface PointInterface {
 }
 
 
-
-export interface GridInterface {
-
-	makePoint(coordinates: number[]): PointInterface;
-	getPoint(coordinates: number[]): PointInterface;
-	setPoint(coordinates: number[], kind: KindInterface): void;
-
-
+export interface GridInterface<PointClass extends PointInterface> {
 	initialize(distribution: CumulativeDistribution<KindInterface>): this;
-	step(): this;
-	updatePoints(): this;
-	getNeighbors(point: PointInterface): Array<PointInterface>;
-
-	map(func: (point: PointInterface, index?: CoordinatesInterface, thisValues?: this) => PointInterface): this;
-
+	step(actions: OrderedActionsInterface): this;
+	map(func: (point: PointClass, index?: CoordinatesInterface, thisValues?: this) => PointClass): this;
+	// Point interaction methods
+	makePoint(coordinates: number[]): PointClass;
+	getPoint(coordinates: number[]): PointClass;
+	setPoint(coordinates: number[], kind: KindInterface): void;
+	getNeighbors(point: PointClass): Array<PointClass>;
+	// HTML/CSS methods
 	html: HTMLScriptElement;  //document.getElementById("Grid");
 	container: HTMLScriptElement;
 	background: HTMLScriptElement;
@@ -73,7 +68,7 @@ export interface ActionInterface {
 	 */
 	name: string;
 	actionUI: ActionUIInterface;
-	step(point: PointInterface, grid: GridInterface): PointInterface;
+	step(point: PointInterface, grid: GridInterface<PointInterface>): PointInterface;
 	register(): void;
 }
 
