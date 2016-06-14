@@ -30,11 +30,12 @@ export interface DistributionInterface {
 export type CoordinatesInterface = Array<number>;
 
 export interface PointInterface {
+	coordinates: CoordinatesInterface;
 	mapCoordinates(func: (value: number, index?: number, thisValues?: Array<number>) => number): this;
 	add(PointInterface: this): this;
 	invert(): this;
 	subtract(PointInterface: this): this;
-	compare(point: this, delta: number): Boolean;
+	compare(point: this, delta: number): boolean;
 	// Constructors and converters
 	fromArray(values: number[]): this;
 	fromPoint(point: this): this;
@@ -42,16 +43,20 @@ export interface PointInterface {
 	toString(): string;
 }
 
-
 export interface GridInterface<PointClass extends PointInterface> {
-	initialize(distribution: CumulativeDistribution<KindInterface>): this;
+	/**
+	 * 
+	 * ... currently assuming this indexes on range [0, x]
+	 */
+	initialize(distribution: CumulativeDistribution<KindInterface>, history: number[]): this;
 	step(actions: OrderedActionsInterface): this;
 	map(func: (point: PointClass, index?: CoordinatesInterface, thisValues?: this) => PointClass): this;
 	// Point interaction methods
-	makePoint(coordinates: number[]): PointClass;
-	getPoint(coordinates: number[]): PointClass;
-	setPoint(coordinates: number[], kind: KindInterface): void;
-	getNeighbors(point: PointClass): Array<PointClass>;
+	makePoint(coordinates: CoordinatesInterface): PointClass;
+	getPoint(coordinates: CoordinatesInterface): PointClass;
+	setPoint(coordinates: CoordinatesInterface, kind: KindInterface): void;
+	getNeighbors(coordinates: CoordinatesInterface): Array<PointClass>;
+	containsCoordinates(coordinates: CoordinatesInterface): boolean;
 	// HTML/CSS methods
 	html: HTMLScriptElement;  //document.getElementById("Grid");
 	container: HTMLScriptElement;
@@ -72,12 +77,11 @@ export interface ActionInterface {
 	register(): void;
 }
 
-export interface OrderedActionsInterface {
+export interface OrderedActionsInterface extends Array<ActionInterface>{
 	/** 
 	 * Array of all existing action rules, in an order.
 	 * 'allActions' returns actions without an order.
 	 */
-	[index: number]: ActionInterface;
 }
 
 export interface ActionUIInterface {
