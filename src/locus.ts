@@ -21,29 +21,31 @@ export interface LocusInterface<T> {
 	 * Why do we have flatMap? Answer: for things like neighborCoordinates, where you
 	 * generate multiple points from a single point
 	 */
+	// Categorical
 	map(func: (value: LocusInterface<T> | T) => LocusInterface<T> | T): this;
+	append(locus: this): this;
 	flatten(): this;
 	flatMap(func: (value: LocusInterface<T> | T) => LocusInterface<T> | T): this; // basically bind
-	append(locus: this): this;
-
-
+	// Public attributes
 	dimension: number;  // Probably a getter property
 	sizes: number;  // Probably a getter property
 	coordinates: number[]; // For toplevel Locus, this should be []
-
+	// Used to locate points.
+	// Relevantly, will not give points outside of the bounds of this Locus
 	neighbors(locus: LocusInterface<T>): Array<LocusInterface<T>>;
-	protected neighborCoordinates(coordinates: number[]): Array<Array<number>>;
 	isNearby(first: LocusInterface<T>)
-	
+
 	compare(value: any): Boolean;
 	// Constructors and converters
 	zero(): this;
 	toString(): string;
+
+	// Make these private or protected
+	neighborCoordinates(coordinates: number[]): Array<Array<number>>;
 }
 
 
 export interface PointInterface extends LocusInterface<number> {
-	coordinates: number[];
 
 	map(func: (point: this) => this): this;
 	comparePoint(other: this): Boolean;
@@ -81,6 +83,9 @@ export class UpdatedPointBase implements PointInterface {
 		public coordinates: CoordinatesInterface,
 		public kind: KindInterface = AllKinds.empty()
 	) { };
+	get dimension() {
+		return this.coordinates.length;
+	}
 	map(func: (point: this, index?: number) => this): this {
 		/**
 		 * Very basic map function. Exists to provide easier mapping behavior on grids.
@@ -102,7 +107,9 @@ export class UpdatedPointBase implements PointInterface {
 			return false;
 		}
 	}
-	comparePoint(point: Point): Boolean {
-
+	comparePoint(point: PointInterface): Boolean {
+		if (this.dimension == point.dimension) {
+			
+		}
 	}
 }
