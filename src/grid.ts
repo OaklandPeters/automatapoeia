@@ -6,8 +6,8 @@
 
 import {PointInterface, GridInterface, KindInterface, OrderedActionsInterface, ActionInterface, CoordinatesInterface, Buildable} from './interfaces';
 import {Kind, AllKinds} from './agents';
-import {CumulativeDistribution} from './distribution';
-import {assert} from './support';
+import {Distribution, CumulativeDistribution, uniformDistribution} from './distribution';
+import {assert, range, shove} from './support';
 
 
 export class PointBase implements PointInterface {
@@ -59,7 +59,16 @@ export class PointBase implements PointInterface {
 
 	map(func: (point: this, index?: number) => this): this {
 		/**
-		 * Very basic map function. Exists to provide easier mapping behavior on grids.
+		 * Very basic map function. Exists to provide the same exposed interface as Grid.
+		 * (so you can call map on a row of a grid, or on a point of a grid), without reflecting
+		 * on the type of the object (grid/row/point)
+		 */
+		return func(this);
+	}
+
+	bind(func: (point: this, index?: number) => this[]): PointInterface[] {
+		/**
+		 * Very basic bind function. Exists to provide the same exposed interface as Grid.
 		 * (so you can call map on a row of a grid, or on a point of a grid), without reflecting
 		 * on the type of the object (grid/row/point)
 		 */
@@ -80,7 +89,7 @@ export class PointBase implements PointInterface {
 		return this.fromPoint(this.add(right.invert()));
 	}
 
-	compare(right: this, delta: number): Boolean {
+	compare(right: this, delta: number): boolean {
 		let temp = this.subtract(right).coordinates;
 		return temp.every((value, index, array) => (value <= delta));
 	}
@@ -119,22 +128,6 @@ export class Point3D extends PointBase {
 //		Current problem, GridInterface not knowing that it's inner type implements PointInterface
 //
 
-export interface GridInterface<PointClass extends PointInterface> {
-	initialize(distribution: CumulativeDistribution<KindInterface>): this;
-	step(actions: OrderedActionsInterface): this;
-	map(func: (point: PointClass, index?: CoordinatesInterface, thisValues?: this) => PointClass): this;
-	// Point interaction methods
-	makePoint(coordinates: number[]): PointClass;
-	getPoint(coordinates: number[]): PointClass;
-	setPoint(coordinates: number[], kind: KindInterface): void;
-	getNeighbors(point: PointClass): Array<PointClass>;
-	// HTML/CSS methods
-	html: HTMLScriptElement;  //document.getElementById("Grid");
-	container: HTMLScriptElement;
-	background: HTMLScriptElement;
-	css: CSS;
-}
-
 export function makeGrid<PointClass, GridClass>(sizes: CoordinatesInterface){
 	/**
 	 * @todo: This function should go onto model or gamestate, or similar. It involves all information necessary to setup an initialized grid.
@@ -144,23 +137,62 @@ export function makeGrid<PointClass, GridClass>(sizes: CoordinatesInterface){
 }
 
 
-export class GridBase<PointClass extends PointInterface> implements GridInterface<PointClass> {
-	Point: PointClass;
-	sizes: CoordinatesInterface;
-	points: Array<any | PointClass>;  // Recursive data type. type T = Array<T> | T;
 
+export function adjacentCoordinates(coordinates: CoordinatesInterface): Array<CoordinatesInterface> {
+	/**
+	 * Generate all coordinates one-number-off ('adjacent') to coordinates.
+	 * These are not filtered for sanity, or even being greater than 0.
+	 */
+	let accumulator: CoordinatesInterface[] = [[]];
+	coordinates.forEach(function(coordinate){
+		let new_accumulator: CoordinatesInterface[] = []
+		accumulator.forEach(function(partialCoordinates: CoordinatesInterface, index: number){
+			new_accumulator.push(shove(partialCoordinates, coordinate - 1))
+			new_accumulator.push(shove(partialCoordinates, coordinate))
+			new_accumulator.push(shove(partialCoordinates, coordinate + 1))
+		})
+		accumulator = new_accumulator;
+	})	
+	return accumulator;
+}
+
+export class GridBase<PointClass extends PointBase> implements GridInterface<PointBase> {
 	// Constructors
-	constructor(size: CoordinatesInterface, Point: PointClass) {
+	constructor(
+		public sizes: CoordinatesInterface,
+		public Point: PointClass,
+		public points: Array<any | PointClass> = [] // Recursive data type. type T = Array<T> | T;
+	) { }
 
+	initialize(distribution?: CumulativeDistribution<KindInterface>, history: number[] = []): this {
+		if (typeof distribution === 'undefined') {
+			distribution = uniformDistribution<Kind>(AllKinds.empty()).integral();
+		}
+		let accumulator: Array<GridBase<PointClass> | PointClass> = [];
+		let first = this.sizes[0];
+		let rest = this.sizes.slice(1);
+
+		range(0, first).forEach(function(coordinate: number) {
+			// Make new copy of history
+			let memo: number[] = history.slice().push(coordinate);
+			// let loci: GridBase<PointClass> | PointClass;
+
+			if (typeof first === 'undefined') {
+				// Make a point
+				let loci: PointClass = new this.Point(memo, distribution.random());
+				accumulator.push(loci);
+			} else {
+				// Make a grid of lower dimension
+				// loci as GridBase<PointClass>;
+				let loci: GridBase<PointClass> = new this.constructor(rest, this.Point);
+				loci.initialize(distribution, memo);
+				accumulator.push(loci);
+			}
+		})
+
+		this.points = accumulator;
+		return this;
 	}
-	fromPoints(sizes: CoordinatesInterface, points: PointClass) {
-
-	}
-
-	fromArray(points: PointClass[]) {
-		return new (this.constructor as Buildable<this>)(...points);
-	}
-
 
 	// Utility methods - used for access deeply nested points
 	protected getter(coordinates: CoordinatesInterface): any {
@@ -175,6 +207,7 @@ export class GridBase<PointClass extends PointInterface> implements GridInterfac
 		let deepestArray = this.getter(front);
 		deepestArray[last] = point;
 	}
+
 	// Point functions
 	makePoint(coordinates: CoordinatesInterface): PointClass {
 		return this.Point.constructor.apply({}, coordinates);
@@ -186,14 +219,34 @@ export class GridBase<PointClass extends PointInterface> implements GridInterfac
 		let point = this.getter(coordinates);
 		point
 	}
-	getNeighbors(point: PointClass): PointClass[] {
+	getNeighbors(coordinates: CoordinatesInterface): PointClass[] {
+		let filteredCoordinates = adjacentCoordinates(coordinates).filter((value: number[], index: number, array: number[][]) => this.containsCoordinates(value))
 		let accumulator: PointClass[] = [];
-
-		point.mapCoordinates(function(coord: number, index: number, coordinates: CoordinatesInterface): number {
-			let before = coordinates.slice();
-			// let before: CoordinatesInterface = coordinates.slice()[index] = coord - 1;
+		filteredCoordinates.forEach(function(coordinates: CoordinatesInterface){
+			accumulator.push(this.getPoint(coordinates))
 		})
+		return accumulator;		
 	}
+	containsCoordinates(coordinates: CoordinatesInterface): boolean {
+		if (coordinates.length != this.sizes.length) {
+			return false;
+		} else {
+			return coordinates.every((value, index) => (value <= this.sizes[index]))
+		}
+	}
+
+	containsPoint(point: PointClass): boolean {
+		return this.containsCoordinates(point.coordinates);
+	}
+	contains(loci: PointClass | CoordinatesInterface): boolean {
+		if ((<PointClass>loci).coordinates !== undefined) {
+			return this.containsPoint(loci)
+		} else if ((loci as CoordinatesInterface)) {
+			return this.containsCoordinates(loci);
+		}
+	}
+
+	
 
 	map(pointFunction: (point: PointInterface, index?: CoordinatesInterface, thisContainer?: this) => PointInterface): this {
 		// Proxies the pointFunction call down the array of points.
@@ -202,10 +255,7 @@ export class GridBase<PointClass extends PointInterface> implements GridInterfac
 			this.points.map((thing, index, thisContainer) => thing.map(pointFunction, index, thisContainer))
 		);
 	}
-	initialize(distribution: CumulativeDistribution<KindInterface>): this {
-		this.map((point: PointClass) => distribution.random());
-		return this;
-	}
+
 	step(actions: OrderedActionsInterface): this {
 		let grid = this;
 		actions.map(function(action){
@@ -213,4 +263,10 @@ export class GridBase<PointClass extends PointInterface> implements GridInterfac
 		});
 		return grid;
 	}
+
+
+	html: HTMLScriptElement;  //document.getElementById("Grid");
+	container: HTMLScriptElement;
+	background: HTMLScriptElement;
+	css: CSS;
 }

@@ -1,6 +1,10 @@
+Workon:
+Files: support.ts, interfaces.ts, grid.ts, locus.ts,
+
 Todo:
 ============================
 * Grid map() function, needs to support iterating across multiple dimensions
+** THIS IS HARD
 * Change Grid .map() to accumulate a 'path: number[]' instead of an 'index: number'
 * Collect various utility functions into a utility library(ies) 
 * Simplify OrderedActionInterface --> OrderedActions = Array<ActionInterface>
@@ -13,3 +17,9 @@ Utility functions:
 * enumerate
 * traverseEnumerate -- the high-dimensional one. Returns: [value: T, coordinates: number[]]
 * High-dimensional array-like structure: tensor
+
+Unnecessary, but Satisfying:
+===============================
+* immutable version of Array, plus some basic utility functions
+** shove, merge, flatten, append, map, bind
+** Hard part: listing all of the array functions to rewrite.
