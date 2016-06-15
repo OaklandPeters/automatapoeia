@@ -1,5 +1,6 @@
 import {Point2D, Point3D} from './grid';
-import {AllKindsClass, AllKinds, Distribution, CumulativeDistribution, Random} from './agents';
+import {AllKindsClass, AllKinds} from './agents';
+import {Distribution, CumulativeDistribution, Random} from './distribution';
 
 var automatapoeiaModule = angular.module('automatapoeia', []);
 
