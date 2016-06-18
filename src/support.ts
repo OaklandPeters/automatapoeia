@@ -109,6 +109,32 @@ export function shove<T>(array: Array<T>, element: T): Array<T> {
 	return newArray;
 }
 
+export function initializeArray<T>(
+		sizes: Array<number>,
+		initializer: (path: Array<number>) => T = ((path) => undefined),
+		path: Array<number> = []): T | RecursiveArray<T> {
+	/*
+	Initialize a high-dimensional array, with values returned by initializer function.
+	If sizes is an empty array, returns a 'point' - a value from the initializer function
+	with no wrapping array.
+	 */
+	if (sizes.length === 0) {
+		return initializer(path);
+	} else {
+		// sizes.length >= 2
+		let accumulator: RecursiveArray<T> = [];
+		accumulator as RecursiveArray<T>;
+		let front = sizes[0];
+		let rest = sizes.slice(1);
+		for (let i = 0; i < front; i += 1) {
+			accumulator.push(
+				initializeArray(rest, initializer, shove(path, i))
+			)
+		}
+		return accumulator;	
+	}
+}
+
 
 
 export function product<T>(...pools: Array<Array<T>>): Array<Array<T>> {
@@ -151,7 +177,7 @@ export function construct<T extends Function>(self: T, args: Array<any>): T {
 	return self.apply(self, args);
 };
 
-export function format(template: string, ...matches: string[], keywords: {[key: string]: string} = {}): string {
+export function format(template: string, matches: string[], keywords: {[key: string]: string} = {}): string {
 	function replacer(match: string, content: string|number) {	//Replace with return value
 		/**
 		 * Returns a new value to replace the match. This function is used as argument into the String.replace(regex[,rep_func]) function
