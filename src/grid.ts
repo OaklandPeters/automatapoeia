@@ -66,9 +66,9 @@ export class PointBase implements PointInterface {
 		return func(this);
 	}
 
-	bind(func: (point: this, index?: number) => this[]): PointInterface[] {
+	unfold(func: (point: this, index?: number) => Array<this>): Array<this> {
 		/**
-		 * Very basic bind function. Exists to provide the same exposed interface as Grid.
+		 * Very basic unfold function. Exists to provide the same exposed interface as Grid.
 		 * (so you can call map on a row of a grid, or on a point of a grid), without reflecting
 		 * on the type of the object (grid/row/point)
 		 */

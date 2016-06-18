@@ -1,8 +1,12 @@
-Workon:
+Working on:
 Files: support.ts, interfaces.ts, grid.ts, locus.ts,
 
 Todo:
 ============================
+* NEW GOAL: draft new_grid.ts -- dumber point + grid, but with smarter 'loci' class
+** Draw some material from locus.ts
+*** Then delete locus.ts
+
 * Grid map() function, needs to support iterating across multiple dimensions
 ** THIS IS HARD
 * Change Grid .map() to accumulate a 'path: number[]' instead of an 'index: number'
