@@ -11,7 +11,7 @@ export interface KindInterface {
 
 export interface AllKindsInterface {
 	/* Array of all existing Kinds */
-	empty(): KindInterface;
+	empty: KindInterface;
 	get(name: string): KindInterface;
 	[index: number]: KindInterface;
 }
@@ -29,6 +29,7 @@ export type CoordinatesInterface = Array<number>;
 
 export interface PointInterface {
 	coordinates: CoordinatesInterface;
+	kind: KindInterface;
 	mapCoordinates(func: (value: number, index?: number, thisValues?: Array<number>) => number): this;
 	add(PointInterface: this): this;
 	invert(): this;
@@ -41,11 +42,18 @@ export interface PointInterface {
 	toString(): string;
 }
 
+export function isPointInterface(obj: any): obj is PointInterface {
+
+}
+
+
 export interface GridInterface<PointClass extends PointInterface> {
 	/**
 	 * 
 	 * ... currently assuming this indexes on range [0, x]
 	 */
+	sizes: CoordinatesInterface;
+	points: RecursiveArray<PointClass>;
 	initialize(distribution: CumulativeDistribution<KindInterface>, history: number[]): this;
 	step(actions: OrderedActionsInterface): this;
 	map(func: (point: PointClass, index?: CoordinatesInterface, thisValues?: this) => PointClass): this;

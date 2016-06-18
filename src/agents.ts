@@ -7,9 +7,15 @@ export class AllKindsClass extends Array<Kind> implements AllKindsInterface {
 	get(name: string): Kind {
 		return this.find((kind) => kind.name == name)
 	}
-	empty(): Kind {
+	get empty(): Kind {
 		return this.get('empty');
 	}
+	// get default(): Kind {
+	// 	return this.empty;
+	// }
+	// set default(value: Kind) {
+	// 	this._default = value
+	// }
 
 }
 
