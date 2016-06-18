@@ -17,18 +17,21 @@ export interface Constructible<T> {
 
 export type Buildable<T> = Constructible<T> & Function;
 
-export interface RecursiveObject<T> {
+export interface RecursiveObject<T> extends Array<T | RecursiveArray<T>>{
 	/**
 	 * RecursiveArray and RecursiveObject are used to represent arrays
 	 * which may be nested - such as the case of higher dimension arrays,
 	 * or trees. The 'leaf' values are of type T
 	 */
-	[i: number]: T | RecursiveArray<T>
+	// [i: number]: T | RecursiveArray<T>
 }
 
-export interface RecursiveArray<T> extends Array<RecursiveObject<T>> {
+export interface RecursiveArray<T> extends RecursiveObject<T> {
 }
 
+/* Placeholder, for when I don't know what will go there, and haven't tried yet.
+	Uses 'void', so interacting with that type should always fail. */
+export type Placeholder = void;
 
 
 /**

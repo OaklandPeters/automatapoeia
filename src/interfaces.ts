@@ -1,8 +1,6 @@
 import {CumulativeDistribution} from './distribution';
+import {RecursiveArray, has} from './support';
 
-/* Placeholder, for when I don't know what will go there, and haven't tried yet.
-	Uses 'void', so interacting with that type should always fail. */
-export type Placeholder = void;
 
 export interface KindInterface {
 	name: string;
@@ -63,6 +61,8 @@ export interface GridInterface<PointClass extends PointInterface> {
 	background: HTMLScriptElement;
 	css: CSS;
 }
+
+
 
 export interface ActionInterface {
 	/**
