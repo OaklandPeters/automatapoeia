@@ -10,13 +10,6 @@ export class AllKindsClass extends Array<Kind> implements AllKindsInterface {
 	get empty(): Kind {
 		return this.get('empty');
 	}
-	// get default(): Kind {
-	// 	return this.empty;
-	// }
-	// set default(value: Kind) {
-	// 	this._default = value
-	// }
-
 }
 
 export var AllKinds: AllKindsClass = new AllKindsClass();
