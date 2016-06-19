@@ -135,6 +135,29 @@ export function initializeArray<T>(
 	}
 }
 
+function isRecursiveArray<T>(value): value is RecursiveArray<T> {
+	return (value.length !== undefined);
+}
+
+function recursiveArrayBind<T, U>(
+	func: (value: T, index: number, array: RecursiveArray<T>) => U
+): (input: RecursiveArray<T>) => RecursiveArray<U> {
+	/*
+	... I think this might be the traversal for array
+	 */
+	function wrapped(array: RecursiveArray<T>): RecursiveArray<U> {
+		var self = this;
+		return array.map(function(value: T, index: number, array: Array<T>): U {
+			if (isRecursiveArray(value)) {
+				return self.call(self, value)
+			} else {
+				return func(value, index, array)
+			}
+		})
+	}
+	return wrapped
+}
+
 
 
 export function product<T>(...pools: Array<Array<T>>): Array<Array<T>> {
