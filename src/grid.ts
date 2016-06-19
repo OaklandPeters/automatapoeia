@@ -17,11 +17,11 @@ export class PointBase implements PointInterface {
 	 */
 	constructor(
 		public coordinates: CoordinatesInterface,
-		public kind: KindInterface = AllKinds.empty()
+		public kind: KindInterface = AllKinds.empty
 	) { };
 
 	fromArray(coordinates: number[]): this {
-		return new (this.constructor as Buildable<this>)(this.coordinates, AllKinds.empty());
+		return new (this.constructor as Buildable<this>)(coordinates, this.kind);
 	}
 
 	fromPoint(point: this): this {
