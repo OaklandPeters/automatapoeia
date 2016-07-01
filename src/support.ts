@@ -135,30 +135,28 @@ export function initializeArray<T>(
 	}
 }
 
-function isRecursiveArray<T>(value): value is RecursiveArray<T> {
+export function isRecursiveArray<T>(value): value is RecursiveArray<T> {
 	return (value.length !== undefined);
 }
 
-function recursiveArrayBind<T, U>(
-	func: (value: T, index: number, array: RecursiveArray<T>) => U
-): (input: RecursiveArray<T>) => RecursiveArray<U> {
-	/*
-	... I think this might be the traversal for array
-	 */
-	function wrapped(array: RecursiveArray<T>): RecursiveArray<U> {
-		var self = this;
-		return array.map(function(value: T, index: number, array: Array<T>): U {
-			if (isRecursiveArray(value)) {
-				return self.call(self, value)
-			} else {
-				return func(value, index, array)
-			}
-		})
-	}
-	return wrapped
+
+export function isMappable(value: any): value is {map: Function} {
+	return (value.map !== undefined)
 }
 
-
+export function recursiveMap<T, U>(func: (value: T) => U, guard = isMappable): (input: RecursiveArray<T> | T) => RecursiveArray<U> | U {
+	/* Recursive version of array.map. */
+	function wrapper(value: RecursiveArray<T> | T): RecursiveArray<U> | U {
+		if (guard(value)) {
+			return value.map(function(elm: RecursiveArray<T> | T, index: number, array: RecursiveArray<T>) {
+				return wrapper(elm)
+			})
+		} else {
+			return func(value)
+		}
+	}
+	return wrapper
+}
 
 export function product<T>(...pools: Array<Array<T>>): Array<Array<T>> {
 	/**
@@ -255,3 +253,25 @@ export function arrayEquals(first: Array<any>, second: Array<any>): boolean {
 
 
 
+export function mergeArrays<T, U>(left: Array<T>, right: Array<U>): Array<T | U> {
+	let newArray = left.slice();
+	newArray.concat.apply([], right)
+	return newArray;
+}
+
+
+
+
+export function arrayTraverse<T, U>(f: (x: T)=>U, locus: T | RecursiveArray<T>): U | RecursiveArray<U> {
+
+}
+
+function arrayConcat<T, U>(left: Array<T>, right: Array<U>): Array<T | U> {
+	let accumulator = new Array<T | U>();
+	left.forEach((elm: T) => accumulator.push(elm));
+	right.forEach((elm: U) => accumulator.push(elm));
+	return accumulator;
+}
+function arrayFoldR(func, initial, L) {
+	return [].push
+}
