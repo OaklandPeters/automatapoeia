@@ -12,6 +12,11 @@
 Examples of use:
 typeCheck(myClass, {parent: Manifold, coordinate: Coordinate})
 typeCheck(myKind, {})
+
+
+StructuralCheck(value,
+	{get: Function, set: Function, delete: Function,
+	map: Function, bind: Function, traverse: Function})
  */
 
 
