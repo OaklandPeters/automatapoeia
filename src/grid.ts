@@ -4,7 +4,7 @@
  * 
  */
 
-import {PointInterface, GridInterface, KindInterface, OrderedActionsInterface, ActionInterface, CoordinatesInterface, Buildable} from './interfaces';
+import {PointInterface, GridInterface, KindInterface, OrderedActionsInterface, ActionInterface, CoordinatesInterface, Buildable, isPointInterface, isCoordinatesInterface} from './interfaces';
 import {Kind, AllKinds} from './agents';
 import {Distribution, CumulativeDistribution, uniformDistribution} from './distribution';
 import {assert, range, shove} from './support';
@@ -101,14 +101,14 @@ export class PointBase implements PointInterface {
  * Distinct to prevent mixing them up together, and to allow pairing the class with Grid classes.
  */
 export class Point2D extends PointBase {
-	constructor(coordinates: CoordinatesInterface = [0, 0], kind: KindInterface = AllKinds.empty()) {
+	constructor(coordinates: CoordinatesInterface = [0, 0], kind: KindInterface = AllKinds.empty) {
 		assert(coordinates.length == 2)
 		super(coordinates, kind)
 	}
 }
 
 export class Point3D extends PointBase {
-	constructor(coordinates: CoordinatesInterface = [0, 0, 0], kind: KindInterface = AllKinds.empty()) {
+	constructor(coordinates: CoordinatesInterface = [0, 0, 0], kind: KindInterface = AllKinds.empty) {
 		assert(coordinates.length == 3)
 		super(coordinates, kind)
 	}
@@ -156,26 +156,31 @@ export function adjacentCoordinates(coordinates: CoordinatesInterface): Array<Co
 	return accumulator;
 }
 
-export class GridBase<PointClass extends PointBase> implements GridInterface<PointBase> {
+
+
+
+export class GridBase<GridClass, PointClass extends PointBase> implements GridInterface<PointBase> {
 	// Constructors
 	constructor(
 		public sizes: CoordinatesInterface,
+		public points: Array<any | PointClass> = [], // Recursive data type. type T = Array<T> | T;
 		public Point: PointClass,
-		public points: Array<any | PointClass> = [] // Recursive data type. type T = Array<T> | T;
+		public Grid: GridClass
 	) { }
 
 	initialize(distribution?: CumulativeDistribution<KindInterface>, history: number[] = []): this {
 		if (typeof distribution === 'undefined') {
-			distribution = uniformDistribution<Kind>(AllKinds.empty()).integral();
+			distribution = uniformDistribution<Kind>(AllKinds.empty).integral();
 		}
-		let accumulator: Array<GridBase<PointClass> | PointClass> = [];
+		let accumulator: Array<GridBase<GridClass, PointClass> | PointClass> = [];
 		let first = this.sizes[0];
 		let rest = this.sizes.slice(1);
 
 		range(0, first).forEach(function(coordinate: number) {
 			// Make new copy of history
-			let memo: number[] = history.slice().push(coordinate);
-			// let loci: GridBase<PointClass> | PointClass;
+			// let memo: number[] = history.slice().push(coordinate);
+			let memo: number[] = history.concat([coordinate]);
+			// let loci: GridBase<GridClass, PointClass> | PointClass;
 
 			if (typeof first === 'undefined') {
 				// Make a point
@@ -183,8 +188,8 @@ export class GridBase<PointClass extends PointBase> implements GridInterface<Poi
 				accumulator.push(loci);
 			} else {
 				// Make a grid of lower dimension
-				// loci as GridBase<PointClass>;
-				let loci: GridBase<PointClass> = new this.constructor(rest, this.Point);
+				// loci as GridBase<GridClass, PointClass>;
+				let loci: GridBase<GridClass, PointClass> = new this.constructor(rest, this.Point);
 				loci.initialize(distribution, memo);
 				accumulator.push(loci);
 			}
@@ -192,6 +197,24 @@ export class GridBase<PointClass extends PointBase> implements GridInterface<Poi
 
 		this.points = accumulator;
 		return this;
+	}
+
+	static fromArray<GridClass, PointClass>(points: Array<any | PointInterface>, Point: PointClass) {
+		let sizes: Array<number> = [];
+
+		let lense = points;
+		// Get the sizes of each dimension
+		// Note -- this assumes that each subarray of each dimension is the same size,
+		// but this isn't really enforcable in Javascript
+		while(lense.length !== undefined) {
+			sizes.push(lense.length)
+			if (lense.length >= 1) {
+				lense = lense[0]	
+			} else {
+				lense = undefined
+			}
+		}
+		return new (this.constructor as Buildable<GridBase<GridClass, PointClass>>)(sizes, Point, points);
 	}
 
 	// Utility methods - used for access deeply nested points
@@ -234,15 +257,16 @@ export class GridBase<PointClass extends PointBase> implements GridInterface<Poi
 			return coordinates.every((value, index) => (value <= this.sizes[index]))
 		}
 	}
-
 	containsPoint(point: PointClass): boolean {
 		return this.containsCoordinates(point.coordinates);
 	}
 	contains(loci: PointClass | CoordinatesInterface): boolean {
-		if ((<PointClass>loci).coordinates !== undefined) {
-			return this.containsPoint(loci)
-		} else if ((loci as CoordinatesInterface)) {
-			return this.containsCoordinates(loci);
+		if (isCoordinatesInterface(loci)) {
+			return this.containsCoordinates(loci)
+		} else if (isPointInterface(loci)) {
+			return this.containsPoint(loci);
+		} else {
+			throw Error("Unrecognized type for loci: "+String(loci));
 		}
 	}
 
@@ -250,10 +274,11 @@ export class GridBase<PointClass extends PointBase> implements GridInterface<Poi
 
 	map(pointFunction: (point: PointInterface, index?: CoordinatesInterface, thisContainer?: this) => PointInterface): this {
 		// Proxies the pointFunction call down the array of points.
-		// This should be chained downward until it hits a 'Point' - whose map function will apply it
-		return this.fromArray(
-			this.points.map((thing, index, thisContainer) => thing.map(pointFunction, index, thisContainer))
+		// This should be chained downward until it hits a 'Point' - whose map function will apply it		
+		let points = this.points.map(
+			(thing, index, thisContainer) => thing.map(pointFunction, index, thisContainer)
 		);
+		return GridBase.fromArray<GridClass, PointClass>(points, this.Point) as this;
 	}
 
 	step(actions: OrderedActionsInterface): this {
