@@ -92,14 +92,14 @@ export class Zip {
 	}
 }
 
-export function flattenArray<T>(array: RecursiveArray<T>): RecursiveArray<T> {
-	return [].concat.apply([], array)
+
+export function flattenArray<T>(nested: Array<Array<T>>): Array<T> {
+	return nested.reduce((accumulator, array) => accumulator.concat(array), [])
 }
 
 export function mergeArrays<T, U>(left: Array<T>, right: Array<U>): Array<T | U> {
 	let newArray = left.slice();
-	newArray.concat.apply([], right)
-	return newArray;
+	return newArray.concat.apply([], right);
 }
 
 export function shove<T>(array: Array<T>, element: T): Array<T> {
@@ -135,10 +135,9 @@ export function initializeArray<T>(
 	}
 }
 
-export function isRecursiveArray<T>(value): value is RecursiveArray<T> {
+export function isRecursiveArray<T>(value: any): value is RecursiveArray<T> {
 	return (value.length !== undefined);
 }
-
 
 export function isMappable(value: any): value is {map: Function} {
 	return (value.map !== undefined)
@@ -187,11 +186,15 @@ export function has(obj: any, key: string | number) {
     return obj != null && hasOwnProperty.call(obj, key);
 };
 
-export function assert(value: Boolean, message: string = "Invalid assertion.") {
+export function assert(value: boolean, message: string = "Invalid assertion.") {
 	if (!value) {
 		throw Error(message)
 	}
 };
+
+export function assertType<T>(value: any, checker: (x: any) => boolean): value is T {
+	return checker(value)
+}
 
 export function construct<T extends Function>(self: T, args: Array<any>): T {
 	/* Call constructor from inside class methods. Basic reflection. */
@@ -251,27 +254,84 @@ export function arrayEquals(first: Array<any>, second: Array<any>): boolean {
 	})
 }
 
-
-
-export function mergeArrays<T, U>(left: Array<T>, right: Array<U>): Array<T | U> {
-	let newArray = left.slice();
-	newArray.concat.apply([], right)
-	return newArray;
+export function isArray<T>(value: any): value is Array<T> {
+	// return (value instanceof Array)
+	return (value.length !== undefined);
 }
 
 
+export function traverseArray<T, U>(
+	f: (elm: T, path: Array<number>, thisArray: RecursiveArray<T>) => RecursiveArray<U>,
+	locus: RecursiveArray<T>,
+	path: Array<number> = []
+	): RecursiveArray<U> {
+	/*
+	Map across a potentially nested array, while preserving the array structure.
+	For example:
+
+	var nested = [[1, 2], [3, 4], [5], 6, [[7, 8]]]
+	traverseArray((x) => [x-2, x+2], nested)
+	[[-1, 3, 0, 4], [1, 5, 2, 6], [3, 7], 4, 8, [[5, 9, 6, 10]]]
 
 
-export function arrayTraverse<T, U>(f: (x: T)=>U, locus: T | RecursiveArray<T>): U | RecursiveArray<U> {
-
+	@todo: See if I can make a version of this with a stricter 'f': (elm: T) => U
+		and then derive this version from that. IE
+		make_paths = (array) => traverse(...something to add a path...., array)
+	 */
+	return locus.reduce(
+		function(accumulator: RecursiveArray<U>, elm: T|RecursiveArray<T>, index: number, innerThisArray: RecursiveArray<T>): RecursiveArray<U> {
+			let new_path = path.slice().concat([index])
+			if (isArray(elm)){
+				return accumulator.concat([
+					traverseArray(f, elm, new_path)
+				])
+			} else {
+				return accumulator.concat(f(elm, new_path, innerThisArray))
+			}
+		}
+	, [] as RecursiveArray<U>
+	)
 }
 
-function arrayConcat<T, U>(left: Array<T>, right: Array<U>): Array<T | U> {
+export function enumerateArray<T>(value: RecursiveArray<T>, path: Array<number> = []): RecursiveArray<[Array<number>, T]>{
+	/*
+	Return 1-D array of [path, element] pairs for a potentially nested array.
+	'arrayEnumerate' derives this from 'traverseArray'.
+	 */
+	let accumulator: Array<[Array<number>, T]> = [];
+	traverseArray<T, T>(
+		function(elm: T, path: Array<number>): RecursiveArray<T> {
+			accumulator.push([path, elm]);
+			return [elm] as RecursiveArray<T>
+		},
+		value
+	)
+	return accumulator
+}
+
+export function recursiveArrayEnumerate<T>(value: T | RecursiveArray<T>, path: Array<number> = []): RecursiveArray<[Array<number>, T]>{
+	/*
+	Return 1-D array of [path, element] pairs for a potentially nested array.
+	Unlike 'arrayEnumerate', this does not depend on an explicit traversal function.
+	 */
+	let results: RecursiveArray<[Array<number>, T]> = [];
+	if (isRecursiveArray(value)) {
+		value.forEach(function (element: T|RecursiveArray<T>, index: number): void {
+			let new_path = path.slice().concat([index])
+			let subresults = recursiveArrayEnumerate(element, new_path);
+			results = results.concat(subresults)
+		});
+		return results;
+	} else {
+		return [[path, value]]
+	}
+}
+
+export function arrayConcat<T, U>(left: Array<T>, right: Array<U>): Array<T | U> {
+	/* This is not needed, but Array.concat() already exists. */
 	let accumulator = new Array<T | U>();
 	left.forEach((elm: T) => accumulator.push(elm));
 	right.forEach((elm: U) => accumulator.push(elm));
 	return accumulator;
 }
-function arrayFoldR(func, initial, L) {
-	return [].push
-}
+
