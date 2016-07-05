@@ -5,8 +5,14 @@
  * want to introduce that dependency into this file, so it can be portable.
  */
 
+
+
+
+
 /**
- * Interfaces
+ * Type-Utility
+ * -----------------
+ * TypeScript specific utility interfaces and checking-functions
  * Broadly useful, and non-project specific
  */
 export interface Constructible<T> {
@@ -27,6 +33,17 @@ export interface RecursiveObject<T> extends Array<T | RecursiveArray<T>>{
 }
 
 export interface RecursiveArray<T> extends RecursiveObject<T> {
+}
+
+export function isArray<T>(value: any): value is Array<T> {
+	/*
+	@todo: Have this use type_check.ts utility functions:
+	return StructuralCheck(value, {
+		length: Number, map: Function, forEach: Function,
+		reduce: Function
+	})
+	 */
+	return (value.length !== undefined);
 }
 
 /* Placeholder, for when I don't know what will go there, and haven't tried yet.
@@ -186,7 +203,7 @@ export function has(obj: any, key: string | number) {
     return obj != null && hasOwnProperty.call(obj, key);
 };
 
-export function assert(value: boolean, message: string = "Invalid assertion.") {
+export function assert(value: Boolean, message: string = "Invalid assertion.") {
 	if (!value) {
 		throw Error(message)
 	}
@@ -254,10 +271,7 @@ export function arrayEquals(first: Array<any>, second: Array<any>): boolean {
 	})
 }
 
-export function isArray<T>(value: any): value is Array<T> {
-	// return (value instanceof Array)
-	return (value.length !== undefined);
-}
+
 
 
 export function traverseArray<T, U>(
