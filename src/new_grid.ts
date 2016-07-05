@@ -1,20 +1,21 @@
 /**
  *
  *
- * Coordinates
- * 
- * Point --> data
- * 		no coordinates
- * 		~doesn't know where it is
+ * Coordinates : array of numbers, without context to which grid they are located in
  *
- * Grid --> holds data points; structures & gives relationship to coordinates
- * 		mappable container
+ * Cell : Coordinates + some data to be associated with it (a kind)
  *
- * Locus --> Point(s) + Grid + Coordinates
- * 		mappable container, and acts like a proxy to point(s)
- * 		~ a lense
- *   	ignorent of it's dimensionality
+ * Grid : collection of cells located next to one another, which allows to cells to
+ * 		have proximity relationships to one another.
+ * 		Mappable & traversable
  *
+ * Point : a cell + a reference to it's location and the grid it's located in.
+ * 		A type of lense into a cell of a grid.
+ *
+ * Locus : 1 or more points in a container, with a reference to underlying grid. 
+ * 		Ignorent of the dimensionality of points.
+ * 		Mappable & traversable container. Mutates the grid.
+ * 		
  *
  * Open Questions:
  *  How to specify and encode the dimensionality.
@@ -22,8 +23,12 @@
  *  It also relates to the sizing of the grid, but I'm not sure how to handle that.
  */
 import {KindInterface} from './interfaces';
-import {RecursiveArray, RecursiveObject, assert, initializeArray, Buildable} from './support';
 import {Kind, AllKinds} from './agents';
+// Quality of life support functions
+import {assert, Buildable} from './support';
+// Recursive & advanced array functions
+import {RecursiveArray, RecursiveObject, traverseArray, enumerateArray, initializeArray} from './support';
+import {IManifold, Manifold} from './manifold';
 
 
 type Placeholder = any;
@@ -33,11 +38,11 @@ interface ICoordinate extends Array<number> {
 }
 
 interface ICell {
-	kind: KindInterface
+	data: any;
 }
 
 interface IGrid<_Cell extends ICell, _Coordinate extends ICoordinate> {
-	data: RecursiveArray<_Cell>;
+	cells: RecursiveArray<_Cell>;
 	// Accessors
 	get(coordinate: _Coordinate): _Cell | RecursiveArray<_Cell>;
 	set(coordinate: _Coordinate, cell: _Cell | RecursiveArray<_Cell>): void;
@@ -65,23 +70,6 @@ interface IPoint<_Cell extends ICell, _Coordinate extends ICoordinate, _Grid ext
 }
 
 
-
-// 
-function mapSet<P extends IPoint<any, any, any>>(point: P, cellFunc: (cell: ICell) => ICell): P {
-	/*
-	An example of how this might work for 
-	Key part: it also affects the parent grid.
-	*/
-	let newCell = cellFunc(point.cell);
-	let newGrid = point.grid.setCell(point.coordinate, newCell);
-	return new point.prototype.constructor(
-		newGrid,
-		point.coordinate,
-		newCell
-	);
-}
-
-
 interface ILocus<_Cell extends ICell, _Coordinate extends ICoordinate, _Grid extends IGrid<_Cell, _Coordinate>, _Point extends IPoint<_Cell, _Coordinate, _Grid>> {
 	grid: _Grid;
 	points: Array<_Point>;
@@ -95,16 +83,18 @@ interface ILocus<_Cell extends ICell, _Coordinate extends ICoordinate, _Grid ext
 //
 //	Implementations
 //
-class Coordinate extends Array<number> implements ICoordinate {
-	get dimension() {
-		return this.length;
-	}
-}
 
-class Cell implements ICell {
+
+export class Cell implements ICell {
 	constructor(
 		public kind: KindInterface
 	) { }
+	get data() {
+		return this.kind;
+	}
+	set data(value: KindInterface) {
+		this.kind = value;
+	}
 	static is(value: any): value is Cell {
 		/*
 		Runtime type matching for Cell. Used to determine the bottom of recursive descent in Grids.
@@ -113,35 +103,53 @@ class Cell implements ICell {
 	}
 }
 
-class Grid implements IGrid<Cell, Coordinate> {
-	data: RecursiveArray<Cell>;
+class Coordinate extends Array<number> {
+	get dimension() {
+		return this.length;
+	}
+}
 
-	constructor(data: RecursiveArray<Cell>) {
-		this.data = data;
+
+
+export class Grid<Coordinate extends ICoordinate, _Cell extends ICell> implements IGrid<_Cell, Coordinate> {
+	/**
+	 *
+	 * @Todo: change this to extend Manifold<_Cell>
+	 */
+	cells: RecursiveArray<_Cell>;
+
+	constructor(cells: RecursiveArray<_Cell>) {
+		this.cells = cells;
 	}
 
-	static fromInitializer(sizes: Array<number>, initializer: (path: Array<number>) => Cell = (path) => undefined): Grid {
+	static is<_Coordinate extends ICoordinate, _Cell>(value: any): value is Grid<_Coordinate, _Cell> {
+		// This function needs to be improved. It's too loose atm
+		return ((value.cells !== undefined))
+	}
+
+	static fromInitializer(sizes: Array<number>, initializer: (path: Array<number>) => _Cell = (path) => undefined): Grid {
 		return new (this.constructor as Buildable<any>)(initializeArray(sizes, initializer));
 	}
 
 	get dimension(): number {
 		let dim = 0;
-		let lense: RecursiveArray<any> = this.data;
+		let lense: RecursiveArray<any> = this.cells;
 		while (lense instanceof Array){
 			dim += 1;
 			lense = lense[0];
 		}
 		return dim;
 	}
+
 	// Accessors for deeply nested arrays
-	set(coordinate: Coordinate, value: Cell | RecursiveArray<Cell>): void {
+	set(coordinate: Coordinate, value: _Cell | RecursiveArray<_Cell>): void {
 		let front = coordinate.slice(0, -1) as Coordinate;
 		let last = coordinate.slice(-1)[0];
 		let deepestArray = this.get(front);
 		deepestArray[last] = value;
 	}
-	get(coordinate: Coordinate): Cell | RecursiveArray<Cell> {
-		let lense: Cell | RecursiveArray<Cell> = this.data;
+	get(coordinate: Coordinate): _Cell | RecursiveArray<_Cell> {
+		let lense: _Cell | RecursiveArray<_Cell> = this.cells;
 		coordinate.forEach((coord) => (lense = lense[coord]));
 		return lense;
 	}
@@ -151,54 +159,34 @@ class Grid implements IGrid<Cell, Coordinate> {
 		let deepestArray = this.get(front);
 		delete deepestArray[last];
 	}
+
+
+
+
 	// Functional
-	map(func: (cell: Cell, coordinate: Coordinate, grid: this) => Cell) {
+	// map<U>(func: (cell: _Cell, coordinate: Coordinate, grid: this) => U) {
+	// 	this.cells.map(function(value: _Cell | RecursiveArray<_Cell>,
+	// 						   index: number,
+	// 						   array: Array<_Cell | RecursiveArray<_Cell>>
+	// 						   ): _Cell | RecursiveArray<_Cell> {
+	// 		if(Cell.is(value)){
 
-		this.data.map(function(value: Cell | RecursiveArray<Cell>,
-							   index: number,
-							   array: Array<Cell | RecursiveArray<Cell>>
-							   ): Cell | RecursiveArray<Cell> {
-			if(Cell.is(value)){
-
-			} else {
-				// Recurse
-			}
-
-		})
-	}
-	mapPoint(pointMorphism: (point: Point) => Point): this {
-
-	}
+	// 		} else {
+	// 			// Recurse
+	// 		}
+	// 	})
+	// }
+	// mapPoint(pointMorphism: (point: Point) => Point): this {
+	// }
 }
 
-function isRecursiveArray<T>(value): value is RecursiveArray<T> {
-	return (value.length !== undefined);
-}
 
-function recursiveArrayBind<T, U>(
-	func: (value: T, index: number, array: RecursiveArray<T>) => U
-	): (input: RecursiveArray<T>) => RecursiveArray<U> {
-	/*
-	... I think this might be the traversal for array
-	 */
-	function wrapped(array: RecursiveArray<T>): RecursiveArray<U> {
-		var self = this;
-		return array.map(function(value: T, index: number, array: Array<T>): U {
-			if (isRecursiveArray(value)) {
-				return self.call(self, value)
-			} else {
-				return func(value, index, array)
-			}
-		})
-	}
-	return wrapped
-}
 
 
 
 
 //IPoint<_Cell extends ICell, _Coordinate extends ICoordinate, _Grid extends IGrid<_Cell, _Coordinate>> {
-class Point implements IPoint<Cell, Coordinate, Grid<Cell, Coordinate>> {
+export class Point implements IPoint<Cell, Coordinate, Grid<Cell, Coordinate>> {
 	/*
 	Potential source of bugs: 'coordinate' only indexes 'party-way' into 'grid',
 	and so this.grid.get(this.coordinate) returns RecursiveArray<Cell> instead of Cell
@@ -228,7 +216,7 @@ class Point implements IPoint<Cell, Coordinate, Grid<Cell, Coordinate>> {
 	mapSet(cellFunc: (cell: ICell) => ICell): this {
 		let newCell = cellFunc(this.cell);
 		let newGrid = this.grid.setCell(this.coordinate, newCell);
-		return new this.prototype.constructor(
+		return new (this.constructor as Buildable<this>)(
 			newGrid,
 			this.coordinate,
 			newCell
@@ -237,3 +225,17 @@ class Point implements IPoint<Cell, Coordinate, Grid<Cell, Coordinate>> {
 }
 
 
+// 
+function mapSet<P extends IPoint<any, any, any>>(point: P, cellFunc: (cell: ICell) => ICell): P {
+	/*
+	An example of how this might work for 
+	Key part: it also affects the parent grid.
+	*/
+	let newCell = cellFunc(point.cell);
+	let newGrid = point.grid.setCell(point.coordinate, newCell);
+	return new point.prototype.constructor(
+		newGrid,
+		point.coordinate,
+		newCell
+	);
+}
