@@ -27,6 +27,14 @@ export interface DistributionInterface {
 
 export type CoordinatesInterface = Array<number>;
 
+export function isCoordinatesInterface(value: any): value is CoordinatesInterface {
+	if (value instanceof Array) {
+		return value.every((x: any) => (typeof x === 'number'))
+	} else {
+		return false
+	}
+}
+
 export interface PointInterface {
 	coordinates: CoordinatesInterface;
 	kind: KindInterface;
@@ -42,8 +50,8 @@ export interface PointInterface {
 	toString(): string;
 }
 
-export function isPointInterface(obj: any): obj is PointInterface {
-
+export function isPointInterface(value: any): value is PointInterface {
+	return ((value.coordinates !== undefined) && (value.kind !== undefined))
 }
 
 
@@ -140,7 +148,7 @@ export interface TimeInterface {
 	interval: number;
 	tick(): this;
 	tickCount: number;
-	grid: GridInterface;
+	grid: GridInterface<PointInterface>;
 	allKinds: AllKindsInterface;
 	allActions: OrderedActionsInterface;
 	gameState: GameStateInterface;
@@ -152,8 +160,8 @@ export interface ControlsInterface {
 	 * Mouse controls, and keyboard controls.
 	 * Not sure how to organize this yet.
 	 */
-	mouse: Placeholder;
-	keyboard: Placeholder;
+	// mouse: Placeholder;
+	// keyboard: Placeholder;
 }
 
 export interface GameStateInterface {
@@ -163,7 +171,7 @@ export interface GameStateInterface {
 	 * All state-information should be indexable here.
 	 */
 	kinds: AllKindsInterface;
-	grid: GridInterface;
+	grid: GridInterface<PointInterface>;
 	time: TimeInterface;
 	controls: ControlsInterface;
 }
