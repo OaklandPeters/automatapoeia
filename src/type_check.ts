@@ -3,6 +3,9 @@
  * 
  * Motivation: I end up doing a lot of 'is' checks on classes, and these
  * tools simplify that.
+ *
+ * Note: I'm implementing my Typescript interfaces as classes, so I can attach
+ * the type-checking tool 'is' to them.
  */
 
 /*
@@ -10,23 +13,17 @@ Examples of use:
 typeCheck(myClass, {parent: Manifold, coordinate: Coordinate})
 typeCheck(myKind, {})
  */
-// interface ITypeAtom {
-// 	is: (value: any) => boolean;
-// }
 
-// function isITypeAtom(value: any): value is ITypeAtom {
-// 	return (value.is instanceof Function)
-// }
 
 class ITypeAtom {
+	/* TS interface*/
 	is: (value: any) => boolean;
 
 	// TypeAtom.is(value) Checks whether an object is a typeatom (~has an is)
-	static is(value: any): value is TypeAtom {
+	static is(value: any): value is ITypeAtom {
 		return (value.is instanceof Function)
 	}
 }
-
 
 type ILiteral = string | number | void | Array<any>;
 
@@ -39,19 +36,15 @@ function isILiteral(value: any): value is ILiteral {
 	)
 }
 
-interface IObjectSignature {
+class IObjectSignature {
 	[key: string]: ITypeAtom | ILiteral | IObjectSignature;
-}
 
-class ObjectSignature {
-	[key: string]: ITypeAtom | ILiteral | IObjectSignature;
-}
-
-function isObjectSignature(value: any): value is ObjectSignature {
-	/* This condition is very loose */
-	return (   !isITypeAtom(value)
-			&& !isILiteral(value)
-			&& ObjectType.is(value))
+	static is(value: any): value is IObjectSignature {
+		/* This condition is very loose */
+		return (   !ITypeAtom.is(value)
+				&& !isILiteral(value)
+				&& ObjectType.is(value))		
+	}
 }
 
 
@@ -59,11 +52,14 @@ type IType = ITypeAtom | IObjectSignature | ILiteral;
 
 function isIType(value: any): value is IType {
 	return (
-		isITypeAtom(value)
+		ITypeAtom.is(value)
 		|| isILiteral(value)
-		|| isIObjectSignature(value)
+		|| IObjectSignature.is(value)
 	)
 }
+
+
+
 
 function compareType(value: IType, type: IType): boolean {
 	if (isITypeAtom(value)) {
@@ -168,7 +164,13 @@ class AnyType {
 }
 
 class ObjectType extends Object {
-	static is(value: any): value is Object {
+	static is(value: any): value is (Object & ObjectType){
 		return (typeof value === 'object')
+	}
+}
+
+class FunctionType extends Function {
+	static is(value: any): value is (Function & FunctionType) {
+		return (typeof value === 'function')
 	}
 }
