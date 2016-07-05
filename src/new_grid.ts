@@ -27,7 +27,7 @@ import {Kind, AllKinds} from './agents';
 // Quality of life support functions
 import {assert, Buildable} from './support';
 // Recursive & advanced array functions
-import {RecursiveArray, RecursiveObject, traverseArray, enumerateArray, initializeArray} from './support';
+import {RecursiveArray, RecursiveObject, isRecursiveArray, traverseArray, enumerateArray, initializeArray} from './support';
 import {IManifold, Manifold} from './manifold';
 
 
@@ -58,7 +58,7 @@ interface IPoint<_Cell extends ICell, _Coordinate extends ICoordinate, _Grid ext
 	coordinate: _Coordinate;
 	cell: _Cell;
 
-	new(grid: _Grid, coordinate: _Coordinate, cell: _Cell): this;
+	// new(grid: _Grid, coordinate: _Coordinate, cell: _Cell): this;
 
 
 	// Needs: map cell, and update grid with it
@@ -127,8 +127,11 @@ export class Grid<Coordinate extends ICoordinate, _Cell extends ICell> implement
 		return ((value.cells !== undefined))
 	}
 
-	static fromInitializer(sizes: Array<number>, initializer: (path: Array<number>) => _Cell = (path) => undefined): Grid {
-		return new (this.constructor as Buildable<any>)(initializeArray(sizes, initializer));
+	static fromInitializer<Coordinate extends ICoordinate, Cell extends ICell>(
+		sizes: Array<number>,
+		initializer: (path: Array<number>) => Cell
+	): Grid<Coordinate, Cell> {
+		return new Grid<Coordinate, Cell>(initializeArray(sizes, initializer) as RecursiveArray<Cell>);
 	}
 
 	get dimension(): number {
@@ -145,19 +148,26 @@ export class Grid<Coordinate extends ICoordinate, _Cell extends ICell> implement
 	set(coordinate: Coordinate, value: _Cell | RecursiveArray<_Cell>): void {
 		let front = coordinate.slice(0, -1) as Coordinate;
 		let last = coordinate.slice(-1)[0];
-		let deepestArray = this.get(front);
+		let deepestArray = this.get(front) as RecursiveArray<_Cell>;
 		deepestArray[last] = value;
 	}
 	get(coordinate: Coordinate): _Cell | RecursiveArray<_Cell> {
-		let lense: _Cell | RecursiveArray<_Cell> = this.cells;
-		coordinate.forEach((coord) => (lense = lense[coord]));
-		return lense;
+		return coordinate.reduce<_Cell | RecursiveArray<_Cell>>(
+			(lense, coord) => isRecursiveArray<_Cell>(lense) ?
+				lense[coord] :
+				lense,
+			this.cells as _Cell | RecursiveArray<_Cell>
+		)
 	}
 	delete(coordinate: Coordinate): void {
 		let front = coordinate.slice(0, -1) as Coordinate;
 		let last = coordinate.slice(-1)[0];
 		let deepestArray = this.get(front);
-		delete deepestArray[last];
+		if (isRecursiveArray(deepestArray)){
+			delete deepestArray[last];
+		} else {
+			throw `Error during recursive descent with coordinates ${coordinate}`;
+		}
 	}
 
 
@@ -186,14 +196,14 @@ export class Grid<Coordinate extends ICoordinate, _Cell extends ICell> implement
 
 
 //IPoint<_Cell extends ICell, _Coordinate extends ICoordinate, _Grid extends IGrid<_Cell, _Coordinate>> {
-export class Point implements IPoint<Cell, Coordinate, Grid<Cell, Coordinate>> {
+export class Point implements IPoint<Cell, Coordinate, Grid<Coordinate, Cell>> {
 	/*
 	Potential source of bugs: 'coordinate' only indexes 'party-way' into 'grid',
 	and so this.grid.get(this.coordinate) returns RecursiveArray<Cell> instead of Cell
 	 */
-	grid: Grid;
+	grid: Grid<Coordinate, Cell>;
 	private _coordinate: Coordinate;
-	constructor(grid: Grid, coordinate: Coordinate) {
+	constructor(grid: Grid<Coordinate, Cell>, coordinate: Coordinate) {
 		this.grid = grid;
 		this.coordinate = coordinate;
 	}
@@ -215,7 +225,7 @@ export class Point implements IPoint<Cell, Coordinate, Grid<Cell, Coordinate>> {
 	}
 	mapSet(cellFunc: (cell: ICell) => ICell): this {
 		let newCell = cellFunc(this.cell);
-		let newGrid = this.grid.setCell(this.coordinate, newCell);
+		let newGrid = this.grid.set(this.coordinate, newCell as any as Cell | RecursiveArray<Cell>);
 		return new (this.constructor as Buildable<this>)(
 			newGrid,
 			this.coordinate,
