@@ -233,19 +233,3 @@ export class Point implements IPoint<Cell, Coordinate, Grid<Coordinate, Cell>> {
 		);
 	}
 }
-
-
-// 
-function mapSet<P extends IPoint<any, any, any>>(point: P, cellFunc: (cell: ICell) => ICell): P {
-	/*
-	An example of how this might work for 
-	Key part: it also affects the parent grid.
-	*/
-	let newCell = cellFunc(point.cell);
-	let newGrid = point.grid.setCell(point.coordinate, newCell);
-	return new point.prototype.constructor(
-		newGrid,
-		point.coordinate,
-		newCell
-	);
-}

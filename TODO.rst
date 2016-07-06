@@ -2,6 +2,7 @@ Working on: new_grid.ts
 
 Todo:
 ============================
+* Copy out @todo comments from manifold.ts into this document
 * NEW GOAL: draft new_grid.ts -- dumber point + grid, but with smarter 'loci' class
 ** Draw some material from locus.ts
 *** Then delete locus.ts
