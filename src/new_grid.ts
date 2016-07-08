@@ -28,7 +28,7 @@ import {Kind, AllKinds} from './agents';
 import {assert, Buildable} from './support';
 // Recursive & advanced array functions
 import {RecursiveArray, RecursiveObject, isRecursiveArray, traverseArray, enumerateArray, initializeArray} from './support';
-import {IManifold, Manifold} from './manifold';
+
 
 
 type Placeholder = any;

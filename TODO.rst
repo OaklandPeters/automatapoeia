@@ -1,4 +1,4 @@
-Working on: new_grid.ts
+Working on: reorganize manifold.ts --> manifold/ directory, as interfaces, coordinate, base
 
 Todo:
 ============================
