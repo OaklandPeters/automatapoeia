@@ -20,17 +20,50 @@ StructuralCheck(value,
  */
 
 
-class ITypeAtom {
+/* Type Definitions
+============================== */
+type KeyType = number|string;
+type PathType = Array<KeyType>;
+
+class TypeAtom {
 	/* TS interface*/
 	is: (value: any) => boolean;
 
 	// TypeAtom.is(value) Checks whether an object is a typeatom (~has an is)
-	static is(value: any): value is ITypeAtom {
+	static is(value: any): value is TypeAtom {
 		return (value.is instanceof Function)
 	}
 }
 
 type ILiteral = string | number | void | Array<any>;
+
+class Primitive {
+	/* Checks for Non-Object primitive types
+	Boolean
+	
+	Undefined
+	Number
+	String
+	Symbol (new in ECMAScript 6)
+	Function
+
+
+	Null
+	Note Null is an object
+	 */
+	static is(value: any): value is Primitive {
+		switch (typeof value) {
+			case 'boolean':
+			case 'string':
+			case 'symbol':
+			case 'undefined':
+			case 'number':
+				return true;
+			default:
+				return false;
+		}
+	}
+}
 
 function isILiteral(value: any): value is ILiteral {
 	return (
@@ -42,22 +75,22 @@ function isILiteral(value: any): value is ILiteral {
 }
 
 class IObjectSignature {
-	[key: string]: ITypeAtom | ILiteral | IObjectSignature;
+	[key: string]: TypeAtom | ILiteral | IObjectSignature;
 
 	static is(value: any): value is IObjectSignature {
 		/* This condition is very loose */
-		return (   !ITypeAtom.is(value)
+		return (   !TypeAtom.is(value)
 				&& !isILiteral(value)
 				&& ObjectType.is(value))		
 	}
 }
 
 
-type IType = ITypeAtom | IObjectSignature | ILiteral;
+type IType = TypeAtom | IObjectSignature | ILiteral;
 
 function isIType(value: any): value is IType {
 	return (
-		ITypeAtom.is(value)
+		TypeAtom.is(value)
 		|| isILiteral(value)
 		|| IObjectSignature.is(value)
 	)
@@ -67,7 +100,7 @@ function isIType(value: any): value is IType {
 
 
 function compareType(value: IType, type: IType): boolean {
-	if (isITypeAtom(value)) {
+	if (TypeAtom.is(value)) {
 
 	} else if (isLiteral(value)) {
 
@@ -88,7 +121,7 @@ interface ITypeViolations {
 	Show what went wrong in a type-violation
 	 */
 	// [Path, Should-be-type]
-	[index: number]: [IObjectPath, ITypeAtom]
+	[index: number]: [IObjectPath, TypeAtom]
 }
 
 
@@ -106,11 +139,11 @@ function objectTraversalIterator(structure: IObjectSignature): [IObjectPath, ] {
 	}
 }
 
-function structuralTypeChecker(subject: any, structure: IObjectSignature, path: Array<string|number> = []): [boolean, Object] {
+function typeCheck(subject: any, structure: IObjectSignature, path: PathType = []): [boolean, Object] {
 	/*
 	Clearer refactoring:
 	(1) object traversal: recursively loops down structure, and has the .hasOwnProperty part
-		Also conditions the loop on (!isITypeAtom(value) && (ObjectType.is(value)))
+		Also conditions the loop on (!TypeAtom.is(value) && (ObjectType.is(value)))
 		returns iterable of pairs: [IObjectPath, value]
 	(2) Should only return ITypeViolations. To get truth value, check the length of that.
 	 */
@@ -124,12 +157,21 @@ function structuralTypeChecker(subject: any, structure: IObjectSignature, path: 
 	}
 
 
+	Object.keys(structure).forEach(function(key: string): void {
+		let value = structure[key];
+
+		if (!TypeAtom.is(value) && (ObjectType.is(value))) {
+
+		}
+	})
+
+
 	for (let key in structure) {
 		if (structure.hasOwnProperty(key)) {
 			let value = subject[key];
 			// let result: boolean;
 			// Recursion happens on object literals
-			if (!isITypeAtom(value) && (ObjectType.is(value))) {
+			if (!TypeAtom.is(value) && (ObjectType.is(value))) {
 				let result: boolean;
 				let submatch: Object;
 				[result, submatch] = structuralTypeChecker(subject[key], value)
@@ -145,8 +187,32 @@ function structuralTypeChecker(subject: any, structure: IObjectSignature, path: 
 		}
 	}
 
+	forKey(structure, path, function(key, _path, thisStructure) {
+		let
+	})
+
 	return [matches, accumulator]
 }
+
+function items(obj: Object): Array<[string, any]> {
+	let accumulator: Array<[string, any]> = [];
+	Object.keys(obj).forEach(function(value: string, index: number, array: string[]): void {
+		accumulator.push([value, obj[value]])
+	})
+	return accumulator
+}
+
+
+// function forKey(structure: Object, path: PathType,
+// 	f: (key: KeyType, path: PathType, thisObj: Object) => any
+// 	): void {
+// 	// Abstraction for the forloop
+// 	for (let key in structure) {
+// 		if (structure.hasOwnProperty(key)) {
+// 			f(key)
+// 		}
+// 	}
+// }
 
 
 // Utilities for working with builtin Javascript data types
