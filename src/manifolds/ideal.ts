@@ -9,22 +9,20 @@ What is my goal here... to reduce Manifold down it's basis functions
 import {RecursiveArray, isRecursiveArray} from '../support';
 
 
-// domain element
-
 type Path = Array<number>;
 type Rec<T> = T | RecursiveArray<T>;
 type FoldFunc<T, U> = ( accumulator: U,
 						element: T | RecursiveArray<T>,
 						path: Array<number>,
-						thisManifold?: Manifold<T>
+						thisManifold?: IManifold<T>
 						) => U;
 type MapFunc<T, U> = (value: T | RecursiveArray<T>,
 					  path: Path,
-					  thisManifold?: Manifold<T>
+					  thisManifold?: IManifold<T>
 					  ) => U;
 
 
-interface DesiredManifoldInstance<T> {
+interface IManifold<T> {
 
 	fold<U>(f: FoldFunc<T, U>, initial: U, initial_path: Path)
 	zero
@@ -36,18 +34,6 @@ interface DesiredManifoldInstance<T> {
 	map<U>)(f: MapFunc<T, U>, inital_path: Path)
 	bind
 	traverse
-}
-
-interface DesiredManifoldStatic<T> {
-
-}
-
-
-function MakeManifoldCategory<T>(){
-	type Elm = T;
-	type Rec = T | RecursiveArray<T>
-	type Path = Array<number>
-
 }
 
 
@@ -118,28 +104,7 @@ abstract class MutableSequence<C, T> extends Sequence<C, T> {
 interface IIterable<T> {
 	enumerate(): Array<T>;
 }
-interface IMonoid<T> {
-	zero<U>: Monoid<U>;
-	append(other: Monoid<T>): Monoid<T>;
-}
-class Functor {
-	static lift<T>(x: T): Functor<T>;
-	lift<T>(x: T): Functor<T>;
-	// lift<T>(x: T): Functor<T>;
 
-}
-interface Functor_Static {
-	lift<T>(x: T): Functor_Instance<T>;
-	mapf<T, U>(f: (x: T) -> U): (y: Functor<T>) => Functor<U>;
-	bindf<T, U>()
-}
-interface Functor_Instance<T> {
-	map<U>(f: (x: T) -> U): Functor<U>;
-	bind<U>(f: (x: T) -> Functor<U>): Functor<U>;
-}
-interface IMonad {
-
-}
 
 
 
@@ -150,8 +115,17 @@ interface VectorMin<C, T> {
 	getitem(i: C): T;
 }
 
-abstract class Vector<C, T> {
-	/* Collections object with numeric (integer) indexes, ordered data, and defined finite length.
+
+function indices
+function _indices(vector: Vector<any, any>, accumulator: Array<Array<number>>, sizes: Array<number>, path: Array<number>): Array<Array<number>> {
+
+}
+
+abstract class Vector<C extends Array<number>, T> {
+	/* Collections object with numeric (integer) indexes, ordered data,
+	and defined finite length.
+
+
 
 	MAYBE: if we make enumerate() one of the basis functions, then we don't need sizes(),
 		and will get a more generic data-structure.
@@ -165,13 +139,20 @@ abstract class Vector<C, T> {
 	(4) all T are equitable, so forall T1, T2 in T, equal(T1, T2): boolean
 	*/
 	// abstract sizes(): Array<number>;
-	abstract sizes(): Array<number>;
 	abstract getitem(i: C): T;
+	abstract indices(): Array<C>;
 	// Mixin methods
-	indices(): Array<T>;
-	values(): Array<C>;
-	enumerate(): Array<C, T>;
-	fold<U>(f: (acc: U, x: T) => U, x0: U) => U;
+	values(): Array<T> {
+		return this.indices().map((index: C) => this.getitem(index))
+	}
+	enumerate(): Array<[C, T]> {
+		return this.indices().map((index: C) => [index, this.getitem(index)] as [C, T])
+	}
+	fold<U>(f: (acc: U, x: T, i: C) => U, x0: U): U {
+		return this.enumerate().reduce<U>(
+			(acc: U, [elm, ind]) => f(acc, elm, ind)
+		, x0);
+	}
 	equal(other: Vector<C, T>): boolean;
 	find(x: T): Array<C>;
 	count(x: T): number;
