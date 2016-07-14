@@ -3,15 +3,6 @@
  */
 
 
-
-
-interface Equitable<T> {
-	_compare_inner(left: T, right: T): boolean;
-	equal
-}
-
-
-
 interface Zeroable<T> {
 	/*
 	Zero is the 'empty' or 'null' element for a group. It is given meaning in Monoids,
