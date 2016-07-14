@@ -15,12 +15,25 @@ abstract class Foldable<T> implements IFoldable<T> {
 }
 
 
-// Generic function for Foldable
+/* Generic functions for Foldable
+======================================= */
 function fold<T, U>(foldable: Foldable<T>, f: (first: U, second: T) => U, initial: U): U {
 	return foldable.fold(f, initial)
 }
 
-// Derived functions
+function foldAs<T, U, Subject extends Base, Base extends Foldable<T>>(
+	subject: Subject,
+	base: {new(data: any): Base}
+	f: (first: U, second: T) => U,
+	initial: U
+	): U {
+	return base.prototype.fold.call(subject, f, initial)
+}
+
+
+
+/* Derived functions
+=============================== */
 function all<T>(foldable: Foldable<T>, predicate: (T) => boolean = isTruthy) {
 	/* Non-short-circuiting 'and' operation' */
  	return foldable.fold<boolean>((accumulator, element) => 

@@ -32,7 +32,7 @@ abstract class Enumerator<C, T> implements IEnumerator<C, T>, IIterator<[C, T]> 
 
 /* Functors for Enumerable
 =================================== */
-function array_to_enumerable<T>(array: Array<T>): Enumerable<T> {
+function array_to_enumerable<T>(array: Array<T>): Enumerable<number, T> {
 	return {
 		getitem(index: number): T {
 			return array[index]
@@ -41,10 +41,6 @@ function array_to_enumerable<T>(array: Array<T>): Enumerable<T> {
 			return new ArrayIterator<[number, T]>(array.map((value, index) => [index, value] as [number, T]))
 		}
 	}
-}
-
-function iterable_to_enumerable<T>(iterable: Iterable<T>): Enumerable<number, T> {
-	return array_to_enumerable<T>(iterable_to_array<T>(iterable))
 }
 
 class IterableEnumerator<T> extends Iterator<[number, T]>{
@@ -62,7 +58,7 @@ class IterableEnumerator<T> extends Iterator<[number, T]>{
 		this.counter = 0;
 		this.iterator = data.iter();
 	}
-	next(): IterationResult<T> {
+	next(): IterationResult<[number, T]> {
 		if (!this.done) {
 			this.counter = this.counter + 1;
 			let result = this.iterator.next();
@@ -78,16 +74,10 @@ class IterableEnumerator<T> extends Iterator<[number, T]>{
 		} else {
 			return {done: true}
 		}
-
 	}
-
-
 }
 
 function enumerable_to_array<C, T>(enumerable: Enumerable<C, T>): Array<[C, T]> {
-	let thing = enumerable.enumerate();
-	let other = thing.iter()
-
 	return iterable_to_array<[C, T]>(enumerable.enumerate())
 }
 
@@ -102,9 +92,35 @@ function find<C, T>(enumerable: Enumerable<C, T>, target: T): Array<C> {
 
 
 
+
+// private static pair<L, R>(left: L[], right: R[], count: number): [L, R][] {
+// 	return Array.apply(null, Array(count)).map((_: any, i: number) => [left[i], right[i]])
+// }
+// static shortest<L, R>(left: L[], right: R[]): [L, R][] {
+// 	return this.pair<L, R>(left, right, left.length <= right.length ? left.length : right.length)
+// }
+// static longest<L, R>(left: L[], right: R[]): [L, R][] {
+// 	return this.pair<L, R>(left, right, left.length >= right.length ? left.length : right.length)
+// }
+
+// function zipShortest<C, T, U>(left: Enumerable<C, T>, right: Enumerable<C, U>,
+// 	: ): Enumerable<C, [T, U]> {
+// 	/*
+// 		[insert description of zip]
+	
+
+// 	A similar function can be expressed for Iterable, by first casting 
+// 	everything to array (as in iterable_to_enumerable).
+// 	*/
+	
+
+// }
+
+
+
 export {
 	IEnumerable, IEnumerator,
 	Enumerable, Enumerator,
-	array_to_enumerable, iterable_to_enumerable,
+	array_to_enumerable, enumerable_to_array,
 	find
 }
