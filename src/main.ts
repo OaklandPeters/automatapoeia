@@ -4,11 +4,7 @@ import {Distribution, CumulativeDistribution, Random} from './distribution';
 // import {Grid} from './new_grid';
 // import {IManifold, Manifold} from './manifold';
 
-
-
-// temporary testing
-import {PreList, List} from './mixin-test';
-
+import * as cats from './cats/all_cats';
 
 
 
