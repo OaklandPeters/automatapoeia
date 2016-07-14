@@ -13,6 +13,7 @@ iter(): IterationResult<T>, while enum(): IterationResult<[KeyType, T]>
  */
 import {Foldable} from './foldable';
 import {isEqual} from './cat_support';
+import {array_to_enumerable} from './enumerable';
 
 
 /* Interfaces */
@@ -71,6 +72,10 @@ function isNotDone<T>(value: IterationResult<T>): value is IterationValue<T> {
 ================================================ */
 function iter<T>(iterable: Iterable<T>): Iterator<T> {
 	return iterable.iter();
+}
+
+function iterAs<T, Subject extends Base, Base extends Iterable<T>>(subject: Subject, base: {new(data: any): Base}): Iterator<T> {
+	return base.prototype.iter.call(subject);
 }
 
 function next<T>(iterator: Iterator<T>): IterationResult<T> {
@@ -145,6 +150,10 @@ function array_to_iterable<T>(array: Array<T>): Iterable<T> {
 	return {iter: () => new ArrayIterator<T>(array)}
 }
 
+function iterable_to_enumerable<T>(iterable: Iterable<T>): Enumerable<number, T> {
+	return array_to_enumerable<T>(iterable_to_array<T>(iterable))
+}
+
 class ArrayIterator<T> extends Iterator<T> {
 	/* Iterable to Array */
 	data: Array<T>;
@@ -189,6 +198,9 @@ class IterableToFoldable<T> extends Foldable<T> {
 	}
 }
 
+function zip<C, T, U>(){
+	
+}
 
 
 export {
