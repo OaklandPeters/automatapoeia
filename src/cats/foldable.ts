@@ -1,6 +1,5 @@
-import {Iterable, Iterator, IterationResult, forLoop, } from './iterable';
-import {isTruthy} from './zeroable';
-import {isEqual} from './cat_support';
+import {Iterable, Iterator, IterationResult, forLoop, array_to_iterable} from './iterable';
+import {isEqual} from './equatable';
 
 
 interface IFoldable<T> {
@@ -23,23 +22,22 @@ function fold<T, U>(foldable: Foldable<T>, f: (first: U, second: T) => U, initia
 
 function foldAs<T, U, Subject extends Base, Base extends Foldable<T>>(
 	subject: Subject,
-	base: {new(data: any): Base}
+	base: {new(data: any): Base},
 	f: (first: U, second: T) => U,
 	initial: U
 	): U {
 	return base.prototype.fold.call(subject, f, initial)
 }
 
-
-
 /* Derived functions
 =============================== */
-function all<T>(foldable: Foldable<T>, predicate: (T) => boolean = isTruthy) {
+function all<T>(foldable: Foldable<T>, predicate: (value: T) => boolean = Boolean) {
 	/* Non-short-circuiting 'and' operation' */
  	return foldable.fold<boolean>((accumulator, element) => 
  		accumulator && predicate(element), true);
 }
-function none<T>(foldable: Foldable<T>, predicate: (T) => boolean = isTruthy) {
+
+function none<T>(foldable: Foldable<T>, predicate: (value: T) => boolean = Boolean) {
 	/* Non-short-circuiting 'and' operation. Would be called 'any',but that's
 	already defined in TypeScript. */
 	return foldable.fold<boolean>((accumulator, element) =>
@@ -55,11 +53,10 @@ function foldable_to_array<T>(foldable: Foldable<T>): Array<T> {
 function foldable_to_iterator<T, U>(foldable: Foldable<T>, initial: U,
 	folder: (accumulator: U, element: T) => U
 	): Iterator<T> {
-
-
-
 	/* This requires either some sort of queue (such as an array), or 
-	pausable exectuion */
+	pausable exectuion (yield). The array is more-memory intensive, but
+	the 'yield' approaches are not yet widely available in browsers. */
+	return array_to_iterable(foldable_to_array(foldable)).iter()
 }
 
 function foldIterable<T, U>(iterable: Iterable<T>, initial: U,
