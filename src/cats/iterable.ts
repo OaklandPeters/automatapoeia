@@ -295,8 +295,8 @@ export {
 	Iterable, Iterator,
 	IterationResult, IterationValue, IterationDone, isDone, isNotDone,
 	iter, iterAs, next,
-	forEach, fold,
-	IterableTo, IterableFrom, IteratorTo, IteratorFrom
+	forEach, fold, filter,
+	IterableTo, IterableFrom, IteratorTo, IteratorFrom,
 	ArrayIterator,
 	count, contains,
 	zip, zipLongest

@@ -46,6 +46,14 @@ function none<T>(foldable: Foldable<T>, predicate: (value: T) => boolean = Boole
 
 /* Constructors
 ===================== */
+var From = {
+
+}
+
+var To = {
+
+}
+
 function foldable_to_array<T>(foldable: Foldable<T>): Array<T> {
 	return foldable.fold<Array<T>>((acc, elm) => acc.concat([elm]), [] as Array<T>)
 }
