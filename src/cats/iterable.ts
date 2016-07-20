@@ -116,26 +116,30 @@ function fold<T, U>(iterable: Iterable<T>,
 
 
 function filter<T>(iterable: Iterable<T>, predicate: (value: T) => boolean): Iterable<T> {
-	let iterator = iterable.iter()
-	let new_iterator = {
-		next: function(): IterationResult<T> {
-			while(true) {
-				let result = iterator.next()
-				if (isNotDone<T>(result)) {
-					// For IterationValue - filter out ones that don't meet predicate
-					if(predicate(result.value)) {
-						return result;
-					} else {
-						continue;
+	return {
+		iter: function(): Iterator<T> {
+			let iterator = iterable.iter()
+			return {
+				iter: function() { return this },
+				next: function(): IterationResult<T> {
+					while(true) {
+						let result = iterator.next()
+						if (isNotDone<T>(result)) {
+							// For IterationValue - filter out ones that don't meet predicate
+							if(predicate(result.value)) {
+								return result;
+							} else {
+								continue;
+							}
+						} else {
+							// Return the IterationDone result
+							return result
+						}
 					}
-				} else {
-					// Return the IterationDone result
-					return result
 				}
 			}
 		}
-	} as Iterator<T>
-	return {iter: () => new_iterator} as Iterable<T>
+	}
 }
 
 function count<T>(iterable: Iterable<T>, target: T): number {
