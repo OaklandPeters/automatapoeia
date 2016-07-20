@@ -40,7 +40,7 @@ abstract class Enumerator<C, T> implements IEnumerator<C, T>, IIterator<[C, T]> 
 	}
 }
 
-/* Functors for Enumerable
+/* Constructors for Enumerable
 =================================== */
 var To = {
 	Array: function enumerable_to_array<C, T>(enumerable: Enumerable<C, T>): Array<[C, T]> {

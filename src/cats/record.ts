@@ -98,7 +98,7 @@ function delitem<C, T, R extends IMutableRecord<C, T> | IImmutableRecord<C, T>>(
 // derivable once other categories are mixed in, see sequence
 
 
-/* Functors
+/* Constructors
 ==================================== */
 
 

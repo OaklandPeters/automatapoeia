@@ -96,7 +96,7 @@ these are the real stars of the show - the functions
 implied from the interfaces
 ========================================================== */
 
-/* Functors
+/* Constructors
 to/from common data types
 ==================================== */
 // Typescript's definition of Array is missing keys()

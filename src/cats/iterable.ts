@@ -244,7 +244,7 @@ class ArrayIterator<T> extends Iterator<T> {
 	}
 }
 
-/* Functors for Iterable/Iterator
+/* Constructors for Iterable/Iterator
 ==================================== */
 // Iterable TO type X
 var IterableTo = {

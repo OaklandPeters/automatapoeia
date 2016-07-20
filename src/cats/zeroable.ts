@@ -115,7 +115,7 @@ function isZeroOf<Z extends IZeroable>(x: any, zeroable: Class<Z> & {zero: () =>
 }
 
 
-/* Functors
+/* Constructors
 to/from common data types
 ==================================== */
 

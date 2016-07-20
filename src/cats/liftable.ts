@@ -71,7 +71,7 @@ these are the real stars of the show - as these functions are
 implied from the interfaces, and hence things you get "for free"
 ========================================================== */
 
-/* Functors
+/* Constructors
 to/from common data types
 ==================================== */
 
