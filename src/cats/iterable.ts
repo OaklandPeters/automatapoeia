@@ -1,19 +1,23 @@
 /*
 A Python-inspired take on iter() and Iterablility in Javascript.
 
-
-Non-ES6 Iterator - this doesn't use Symbol.iterator, because that is
-not commonly supported at this time (07/10/2016). Once Symbol.iterator
+This is a non-ES6 Iterator - this doesn't use Symbol.iterator, because
+that is not commonly supported at this time (07/10/2016).
+Once Symbol.iterator
 is supported in most browsers, this will be rewritten to match it.
 
+An ES6 version of this hinges on 'forEach':
+interface ForEachable<T> {
+    forEach(callbackfn: (value: T) => void): void;
+}
 
 Iterable vs Enumerable: Enumerable is Iterable applied to Records --
 data types with a concept of index or key. 
 iter(): IterationResult<T>, while enum(): IterationResult<[KeyType, T]>
  */
-import {Foldable} from './foldable';
-import {isEqual} from './cat_support';
-import {array_to_enumerable} from './enumerable';
+import {Foldable, all} from './foldable';
+import {isEqual} from './equatable';
+import {array_to_enumerable, Enumerable} from './enumerable';
 
 
 /* Interfaces */
@@ -25,6 +29,8 @@ interface IIterator<T> {
 	next(): IterationResult<T>
 }
 
+// IterationResult is already defined in TypeScript, via ES6 collections
+// I'm defining this a bit differently - as a union type, to aid type-guards.
 type IterationResult<T> = IterationDone<T> | IterationValue<T>;
 
 // IterationDone/IterationValue specified as classes rather than interface
@@ -79,7 +85,7 @@ function iterAs<T, Subject extends Base, Base extends Iterable<T>>(subject: Subj
 }
 
 function next<T>(iterator: Iterator<T>): IterationResult<T> {
-	return 
+	return iterator.next();
 }
 
 /* Derivable functions from Iterable/Iterator
@@ -96,29 +102,39 @@ function forLoop<T>(iterable: Iterable<T>, action: (value: T) => void): void {
 	}
 }
 
+function fold<T, U>(iterable: Iterable<T>,
+	folder: (accumulator: U, element: T) => U,
+	initial: U
+	): U {
+	/* Preform a fold on an iterable. */
+	let accumulator = initial;
+	forLoop(iterable, (value) => (accumulator = folder(accumulator, value)))
+	return accumulator;
+}
 
-function filter<T>(iterable: Iterable<T>, predicate: (T) => boolean): Iterable<T> {
+
+function filter<T>(iterable: Iterable<T>, predicate: (value: T) => boolean): Iterable<T> {
 	let iterator = iterable.iter()
 	let new_iterator = {
 		next: function(): IterationResult<T> {
 			while(true) {
 				let result = iterator.next()
 				if (isNotDone<T>(result)) {
+					// For IterationValue - filter out ones that don't meet predicate
 					if(predicate(result.value)) {
 						return result;
 					} else {
 						continue;
 					}
 				} else {
-					break
+					// Return the IterationDone result
+					return result
 				}
 			}
 		}
 	} as Iterator<T>
 	return {iter: () => new_iterator} as Iterable<T>
 }
-
-
 
 function count<T>(iterable: Iterable<T>, target: T): number {
 	/* Count number of occurences of target in iterable. */
@@ -135,24 +151,110 @@ function contains<T>(iterable: Iterable<T>, target: T): boolean {
 	return (count<T>(iterable, target) >= 1)
 }
 
+function allDone<T>(results: Array<IterationResult<T>>): results is Array<IterationValue<T>> {
+	return results.every(
+		(_result: IterationResult<T>) => isNotDone<T>(_result));
+}
 
+function zip<T>(iterables: Array<Iterable<T>>): Iterator<Array<T>> {
+	/* Aggregate multiple iterables into a single iterable. Stops iterating
+	when the shortest iterable is exhausted. See 'zipLongest' for a version
+	which pads the shorter iterables.
+	*/
+	let iterators = iterables.map<Iterator<T>>((value: Iterable<T>) => value.iter());
+	return {
+		iter: function(){ return this },
+		next: function(): IterationResult<Array<T>> {
+			let results = iterators.map<IterationResult<T>>(
+				(_iter: Iterator<T>) => _iter.next());
+			if (allDone<T>(results)) {
+				return {
+					done: false,
+					value: results.map<T>((_result: IterationValue<T>) => _result.value)
+				}
+			} else {
+				return {
+					done: true
+				}
+			}
+		}
+	}
+}
+
+function zipLongest<T, U>(iterables: Array<Iterable<T>>, filler: U = undefined): Iterator<Array<T|U>> {
+	let iterators = iterables.map<Iterator<T>>((value: Iterable<T>) => value.iter());
+	return {
+		iter: function(){ return this },
+		next: function(): IterationResult<Array<T>> {
+			let results = iterators.map<IterationResult<T>>(
+				(_iter: Iterator<T>) => _iter.next());
+
+			let anyDone = false;
+
+			let values = results.map<T|U>(
+				function(_result: IterationResult<T>): T|U {
+					if (isNotDone<T>(_result)) {
+						anyDone = true;
+						return _result.value;
+					} else {
+						return filler;
+					}
+				}
+			)
+			if (anyDone) {
+				return {
+					done: false,
+					value: values
+				}
+			} else {
+				return {done: true}
+			}
+		}
+	}
+}
 
 /* Functors for Iterable/Iterator
 ==================================== */
-function iterable_to_array<T>(iterable: Iterable<T>): Array<T>{
-	/* Functor translating an iterable to an array. */
-	let accumulator: Array<T> = [];
-	forLoop(iterable, (value) => accumulator.push(value))
-	return accumulator
+// Iterable TO type X
+var To = {
+	Array: function<T>(iterable: Iterable<T>): Array<T> {
+		let accumulator: Array<T> = [];
+		forLoop(iterable, (value) => accumulator.push(value))
+		return accumulator
+	},
+	Enumerable: function<T>(iterable: Iterable<T>): Enumerable<number, T> {
+		return array_to_enumerable<T>(iterable_to_array<T>(iterable))
+	},
+	Foldable: class IterableToFoldable<T> extends Foldable<T> {
+		constructor(protected iterable: Iterable<T>) {
+			super()
+		}
+		fold<U>(folder: (accumulator: U, element: T) => U, initial: U): U {
+			return fold<T, U>(this.iterable, folder, initial)
+		}
+	}
 }
 
-function array_to_iterable<T>(array: Array<T>): Iterable<T> {
-	return {iter: () => new ArrayIterator<T>(array)}
+// Iterable FROM type X
+var From = {
+	Array: function<T>(array: Array<T>): Iterable<T> {
+		return {iter: () => new ArrayIterator<T>(array)}
+	}
 }
 
-function iterable_to_enumerable<T>(iterable: Iterable<T>): Enumerable<number, T> {
-	return array_to_enumerable<T>(iterable_to_array<T>(iterable))
-}
+// function iterable_to_array<T>(iterable: Iterable<T>): Array<T>{
+// 	let accumulator: Array<T> = [];
+// 	forLoop(iterable, (value) => accumulator.push(value))
+// 	return accumulator
+// }
+
+// function array_to_iterable<T>(array: Array<T>): Iterable<T> {
+// 	return {iter: () => new ArrayIterator<T>(array)}
+// }
+
+// function iterable_to_enumerable<T>(iterable: Iterable<T>): Enumerable<number, T> {
+// 	return array_to_enumerable<T>(iterable_to_array<T>(iterable))
+// }
 
 class ArrayIterator<T> extends Iterator<T> {
 	/* Iterable to Array */
@@ -179,36 +281,16 @@ class ArrayIterator<T> extends Iterator<T> {
 	}
 }
 
-function fold<T, U>(iterable: Iterable<T>,
-	folder: (accumulator: U, element: T) => U,
-	initial: U
-	): U {
-	let accumulator = initial;
-	forLoop(iterable, (value) => (accumulator = folder(accumulator, value)))
-	return accumulator;
-}
-
-
-class IterableToFoldable<T> extends Foldable<T> {
-	constructor(protected iterable: Iterable<T>) {
-		super()
-	}
-	fold<U>(folder: (accumulator: U, element: T) => U, initial: U): U {
-		return fold<T, U>(this.iterable, folder, initial)
-	}
-}
-
-function zip<C, T, U>(){
-	
-}
 
 
 export {
 	IIterable, IIterator,
 	Iterable, Iterator,
 	IterationResult, IterationValue, IterationDone, isDone, isNotDone,
-	iter, next,
-	forLoop,
-	iterable_to_array, ArrayIterator, fold, IterableToFoldable,
-	count, contains
+	iter, iterAs, next,
+	forLoop, fold,
+	To, From,
+	ArrayIterator,
+	count, contains,
+	zip, zipLongest
 }
