@@ -1,14 +1,45 @@
+/*
+
+Record + Iterability properties.
+
+
+@todo: ImmutableSequence needs to be liftable
+ */
+import {ILiftable, Liftable} from './liftable';
+
 
 /* Interfaces
 ======================== */
+// Iterable
+// Foldable
+// Record
+// Indexed
 interface ISequence<T> {
 	
 }
 
+interface IMutableSequence<T> {
+
+}
+
+interface IImmutableSequence<T> {
+
+}
 
 /* Abstract Base Classes
 with 'is' type-checking static method
 ========================================= */
+abstract class Sequence<T> implements ISequence<T> {
+
+}
+
+abstract class MutableSequence<T> implements IMutableSequence<T> {
+
+}
+
+abstract class ImmutableSequence<T> implements IImmutableSequence<T> {
+
+}
 
 
 /* Typechecking functions
@@ -24,16 +55,23 @@ for each abstract method
 these are the real stars of the show - the functions
 implied from the interfaces
 ========================================================== */
+// function sort(sequence)
+
 
 /* Functors
 to/from common data types
 ==================================== */
+// function array_to_mutable_sequence
+// function mutable_sequence_to_array
+// 
+
 
 /* Exports
 ==================== */
 export {
-	ISequence,
-	Sequence
+	ISequence, Sequence,
+	IMutableSequence, MutableSequence,
+	IImmutableSequence, ImmutableSequence
 }
 
 
