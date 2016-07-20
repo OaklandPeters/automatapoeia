@@ -1,7 +1,16 @@
-import {Iterable, Iterator, IIterator, IIterable, IterationResult,
-	isNotDone, iterable_to_array, ArrayIterator, forLoop, fold} from './iterable';
+/**
+ *
+ * The equivalent from ES6 is 'ForEachAble'
+ * 	in JS, 'Map.forEach(f)' f: (value, key) => void
+ * 	       'iterator' (for (x of mymap)) --> x: [key, value] 
+ *
+ * @todo: Rename and restructure this to 'Indexable'
+ * 	core functions: items(), keys()
+ * Rule: most type-variant parameter is the one returned from iter()
+ */
+import {isNotDone, iterable_to_array, IterationResult, ArrayIterator, forLoop, fold} from './iterable';
 import {IRecord, Record} from './record';
-import {isEqual} from './cat_support';
+import {isEqual} from './equatable';
 
 
 interface IEnumerable<C, T> extends IRecord<C, T> {
@@ -37,7 +46,7 @@ function array_to_enumerable<T>(array: Array<T>): Enumerable<number, T> {
 		getitem(index: number): T {
 			return array[index]
 		},
-		enum(): Enumerator<number, T> {
+		enumerate(): Enumerator<number, T> {
 			return new ArrayIterator<[number, T]>(array.map((value, index) => [index, value] as [number, T]))
 		}
 	}
@@ -89,8 +98,6 @@ function find<C, T>(enumerable: Enumerable<C, T>, target: T): Array<C> {
 		isEqual(target, value) ? acc.concat([key]) : acc;
 	return fold<[C, T], Array<C>>(enumerable.enumerate(), folder, [] as Array<C>)
 }
-
-
 
 
 // private static pair<L, R>(left: L[], right: R[], count: number): [L, R][] {
