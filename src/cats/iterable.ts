@@ -17,7 +17,9 @@ iter(): IterationResult<T>, while enum(): IterationResult<[KeyType, T]>
  */
 import {Foldable, all} from './foldable';
 import {isEqual} from './equatable';
-import {array_to_enumerable, Enumerable} from './enumerable';
+// import {From as EnumerableFrom, Enumerable} from './enumerable';
+import {From as EnumerableFrom, Enumerable} from './enumerable';
+import {To as IterableTo} from './iterable';
 
 
 /* Interfaces */
@@ -90,7 +92,7 @@ function next<T>(iterator: Iterator<T>): IterationResult<T> {
 
 /* Derivable functions from Iterable/Iterator
 ================================================ */
-function forLoop<T>(iterable: Iterable<T>, action: (value: T) => void): void {
+function forEach<T>(iterable: Iterable<T>, action: (value: T) => void): void {
 	let iterator = iterable.iter();
 	while(true) {
 		let element = iterator.next();
@@ -108,7 +110,7 @@ function fold<T, U>(iterable: Iterable<T>,
 	): U {
 	/* Preform a fold on an iterable. */
 	let accumulator = initial;
-	forLoop(iterable, (value) => (accumulator = folder(accumulator, value)))
+	forEach(iterable, (value) => (accumulator = folder(accumulator, value)))
 	return accumulator;
 }
 
@@ -213,49 +215,6 @@ function zipLongest<T, U>(iterables: Array<Iterable<T>>, filler: U = undefined):
 	}
 }
 
-/* Functors for Iterable/Iterator
-==================================== */
-// Iterable TO type X
-var To = {
-	Array: function<T>(iterable: Iterable<T>): Array<T> {
-		let accumulator: Array<T> = [];
-		forLoop(iterable, (value) => accumulator.push(value))
-		return accumulator
-	},
-	Enumerable: function<T>(iterable: Iterable<T>): Enumerable<number, T> {
-		return array_to_enumerable<T>(iterable_to_array<T>(iterable))
-	},
-	Foldable: class IterableToFoldable<T> extends Foldable<T> {
-		constructor(protected iterable: Iterable<T>) {
-			super()
-		}
-		fold<U>(folder: (accumulator: U, element: T) => U, initial: U): U {
-			return fold<T, U>(this.iterable, folder, initial)
-		}
-	}
-}
-
-// Iterable FROM type X
-var From = {
-	Array: function<T>(array: Array<T>): Iterable<T> {
-		return {iter: () => new ArrayIterator<T>(array)}
-	}
-}
-
-// function iterable_to_array<T>(iterable: Iterable<T>): Array<T>{
-// 	let accumulator: Array<T> = [];
-// 	forLoop(iterable, (value) => accumulator.push(value))
-// 	return accumulator
-// }
-
-// function array_to_iterable<T>(array: Array<T>): Iterable<T> {
-// 	return {iter: () => new ArrayIterator<T>(array)}
-// }
-
-// function iterable_to_enumerable<T>(iterable: Iterable<T>): Enumerable<number, T> {
-// 	return array_to_enumerable<T>(iterable_to_array<T>(iterable))
-// }
-
 class ArrayIterator<T> extends Iterator<T> {
 	/* Iterable to Array */
 	data: Array<T>;
@@ -281,6 +240,50 @@ class ArrayIterator<T> extends Iterator<T> {
 	}
 }
 
+/* Functors for Iterable/Iterator
+==================================== */
+// Iterable TO type X
+var IterableTo = {
+	Array: function<T>(iterable: Iterable<T>): Array<T> {
+		let accumulator: Array<T> = [];
+		forEach(iterable, (value) => accumulator.push(value))
+		return accumulator
+	},
+	Enumerable: function<T>(iterable: Iterable<T>): Enumerable<number, T> {
+		return EnumerableFrom.Array<T>(IterableTo.Array<T>(iterable))
+	},
+	Foldable: class IterableToFoldable<T> extends Foldable<T> {
+		constructor(protected iterable: Iterable<T>) {
+			super()
+		}
+		fold<U>(folder: (accumulator: U, element: T) => U, initial: U): U {
+			return fold<T, U>(this.iterable, folder, initial)
+		}
+	}
+}
+
+// Iterable FROM type X
+var IterableFrom = {
+	Array: function<T>(array: Array<T>): Iterable<T> {
+		return {iter: () => IteratorFrom.Array(array)}
+	}
+}
+
+var IteratorTo = {
+	Array: function<T>(iterator: Iterator<T>): Array<T> {
+		let accumulator = new Array();
+		forEach(iterator, (value) => accumulator.push())
+		return accumulator
+	}
+}
+
+var IteratorFrom = {
+	Array: function<T>(array: Array<T>): Iterator<T> {
+		return new ArrayIterator<T>(array);
+	}
+}
+
+
 
 
 export {
@@ -288,8 +291,8 @@ export {
 	Iterable, Iterator,
 	IterationResult, IterationValue, IterationDone, isDone, isNotDone,
 	iter, iterAs, next,
-	forLoop, fold,
-	To, From,
+	forEach, fold,
+	IterableTo, IterableFrom, IteratorTo, IteratorFrom
 	ArrayIterator,
 	count, contains,
 	zip, zipLongest

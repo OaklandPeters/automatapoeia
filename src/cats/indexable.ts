@@ -1,3 +1,4 @@
+///<reference path="../../typings/es6-collections/es6-collections.d.ts"/>
 /**
  * Indexable collections are iterable records, which have an
  * iterable index of keys.
@@ -6,7 +7,8 @@
  * to it for consistency.
  *
  */
-import {IIterable, Iterable, IIterator, Iterator, IterationResult, isNotDone} from './iterable';
+import {IIterable, Iterable, IIterator, Iterator,
+	isNotDone, forEach, From as IterableFrom} from './iterable';
 import {IRecord, Record} from './record';
 
 
@@ -22,10 +24,17 @@ interface IIndexable<C, T> extends IRecord<C, T>, IIterable<T> {
 /* Abstract Base Classes
 with 'is' type-checking static method
 ========================================= */
-abstract class Indexable<C, T> extends Record<C, T>, Iterable<T> implements IIndexable<C, T> {
+abstract class Indexable<C, T> extends Iterable<T> implements IIndexable<C, T> {
 	abstract getitem(i: C): T;
 	abstract keys(): Iterator<C>;
-
+	static is<C, T>(value: any): value is Indexed<C, T> {
+		return (
+			Record.is<C, T>(value)
+			&& Iterable.is<T>(value)
+			&& (value.items instanceof Function)
+			&& (value.keys instanceof Function)
+		)
+	}
 	// Mixin methods
 	iter(): Iterator<T> {
 		let keysIterator = this.keys();
@@ -64,15 +73,6 @@ abstract class Indexable<C, T> extends Record<C, T>, Iterable<T> implements IInd
 			}
 		}
 	}
-	abstract items(): Iterator<IItem<C, T>>;
-	static is<C, T>(value: any): value is Indexed<C, T> {
-		return (
-			Record<C, T>.is(value)
-			&& Iterable<T>.is(value)
-			&& (value.items instanceof Function)
-			&& (value.keys instanceof Function)
-		)
-	}
 }
 
 
@@ -99,22 +99,36 @@ implied from the interfaces
 /* Functors
 to/from common data types
 ==================================== */
+// Typescript's definition of Array is missing keys()
+// So, add that to Array. -- used in From.Array
+interface Array<T> {
+	keys(): Iterator<number>
+}
+
+// Indexable TO type X
+var To = {
+	Map: function<C, T>(indexable: Indexable<C, T>): Map<C, T> {
+		let _map = new Map<C, T>();
+		forEach<[C, T]>(indexable.items(), ([key, value]) => _map.set(key, value))
+		return _map
+	}
+}
+
+// Indexable FROM type X
 var From = {
 	Array: class IndexableFromArray<T> extends Indexable<number, T> {
-		constructor(public array: Array<T>){}
-		keys() {
-			return this.array.keys()
+		constructor(public array: Array<T>){ super() }
+		keys() { return this.array.keys() }
+		getitem(i) { return this.array[i] }
+	},
+	Object: class IndexableFromObject extends Indexable<string, any> {
+		constructor(public data: Object){ super() }
+		keys(): Iterator<string> {
+			return IterableFrom.Array<string>(Object.keys(this.data))
 		}
-		getitem(i) {
-			return this.array[i]
-		}
+		getitem(i) { return this.data[i]}
 	}
-
-	// function<T>(array: Array<T>){}
 }
-// to/from array
-// object
-// Map
 
 
 /* Exports

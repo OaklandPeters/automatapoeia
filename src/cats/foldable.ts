@@ -1,4 +1,4 @@
-import {Iterable, Iterator, IterationResult, forLoop, array_to_iterable} from './iterable';
+import {Iterable, Iterator, IterationResult, forEach, array_to_iterable} from './iterable';
 import {isEqual} from './equatable';
 
 
@@ -62,7 +62,7 @@ function foldable_to_iterator<T, U>(foldable: Foldable<T>, initial: U,
 function foldIterable<T, U>(iterable: Iterable<T>, initial: U,
 	folder: (accumulator: U, element: T) => U): U {
 	let accumulator = initial;
-	forLoop(iterable, function(value) {
+	forEach(iterable, function(value) {
 		accumulator = folder(accumulator, value);
 	})
 	return accumulator;

@@ -8,7 +8,8 @@
  * 	core functions: items(), keys()
  * Rule: most type-variant parameter is the one returned from iter()
  */
-import {isNotDone, iterable_to_array, IterationResult, ArrayIterator, forLoop, fold} from './iterable';
+import {Iterable, Iterator, IIterator, IterationResult, 
+	isNotDone, IterableTo, ArrayIterator, forEach, fold} from './iterable';
 import {IRecord, Record} from './record';
 import {isEqual} from './equatable';
 
@@ -41,20 +42,29 @@ abstract class Enumerator<C, T> implements IEnumerator<C, T>, IIterator<[C, T]> 
 
 /* Functors for Enumerable
 =================================== */
-function array_to_enumerable<T>(array: Array<T>): Enumerable<number, T> {
-	return {
-		getitem(index: number): T {
-			return array[index]
-		},
-		enumerate(): Enumerator<number, T> {
-			return new ArrayIterator<[number, T]>(array.map((value, index) => [index, value] as [number, T]))
+var To = {
+	Array: function enumerable_to_array<C, T>(enumerable: Enumerable<C, T>): Array<[C, T]> {
+		return IterableTo.Array<[C, T]>(enumerable.enumerate())
+	}
+}
+
+var From = {
+	Array: function enumerable_from_array<T>(array: Array<T>): Enumerable<number, T> {
+		return {
+			getitem(index: number): T {
+				return array[index]
+			},
+			enumerate(): Enumerator<number, T> {
+				return new ArrayIterator<[number, T]>(array.map((value, index) => [index, value] as [number, T]))
+			}
 		}
 	}
 }
 
+
+
 class IterableEnumerator<T> extends Iterator<[number, T]>{
-	/* Generates an Enumerator for an Iterable.
-	*/
+	/* Generates an Enumerator for an Iterable. */
 	data: Iterable<T>;
 	done: boolean;
 	counter: number;
@@ -86,10 +96,6 @@ class IterableEnumerator<T> extends Iterator<[number, T]>{
 	}
 }
 
-function enumerable_to_array<C, T>(enumerable: Enumerable<C, T>): Array<[C, T]> {
-	return iterable_to_array<[C, T]>(enumerable.enumerate())
-}
-
 /* Derivable Utility functions
 ===================================  */
 function find<C, T>(enumerable: Enumerable<C, T>, target: T): Array<C> {
@@ -100,34 +106,9 @@ function find<C, T>(enumerable: Enumerable<C, T>, target: T): Array<C> {
 }
 
 
-// private static pair<L, R>(left: L[], right: R[], count: number): [L, R][] {
-// 	return Array.apply(null, Array(count)).map((_: any, i: number) => [left[i], right[i]])
-// }
-// static shortest<L, R>(left: L[], right: R[]): [L, R][] {
-// 	return this.pair<L, R>(left, right, left.length <= right.length ? left.length : right.length)
-// }
-// static longest<L, R>(left: L[], right: R[]): [L, R][] {
-// 	return this.pair<L, R>(left, right, left.length >= right.length ? left.length : right.length)
-// }
-
-// function zipShortest<C, T, U>(left: Enumerable<C, T>, right: Enumerable<C, U>,
-// 	: ): Enumerable<C, [T, U]> {
-// 	/*
-// 		[insert description of zip]
-	
-
-// 	A similar function can be expressed for Iterable, by first casting 
-// 	everything to array (as in iterable_to_enumerable).
-// 	*/
-	
-
-// }
-
-
-
 export {
 	IEnumerable, IEnumerator,
 	Enumerable, Enumerator,
-	array_to_enumerable, enumerable_to_array,
+	From, To,
 	find
 }
