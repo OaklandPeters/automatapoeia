@@ -206,7 +206,7 @@ function items(obj: Object): Array<[string, any]> {
 // function forKey(structure: Object, path: PathType,
 // 	f: (key: KeyType, path: PathType, thisObj: Object) => any
 // 	): void {
-// 	// Abstraction for the forloop
+// 	// Abstraction for the forEach
 // 	for (let key in structure) {
 // 		if (structure.hasOwnProperty(key)) {
 // 			f(key)

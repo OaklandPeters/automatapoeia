@@ -12,7 +12,7 @@ Should advanced me toward the mid-term goal of manifold.
 ** Utility function: enumerate
 ** Change references in other files
 ** THEN: retire current enumerable.ts
-
+* Split iterable --> iterable and iterator (for seperate To/From)
 
 Mid-term Target Goal
 ========================
