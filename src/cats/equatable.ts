@@ -9,16 +9,7 @@
 /* Interfaces
 ======================== */
 interface IEquatable {
-	/* Container data-types supporting equality comparison.
-	Equitable allows for *possibly* comparing to other types.
-
-	NOTE: I need to think *a* *lot* about the other types of equitable, such as for
-	mappable ones, which can/should be equitable over the internal types.
-	*/
-
-	// I'm very unhappy with this signature
-	// It doesn't have the ability to communicate that both 'this' and 'other'
-	// have to meet some interface in order to be Equitable
+	/* Container data-types supporting equality comparison. */
 	equal(other: any): boolean;
 }
 
@@ -84,5 +75,7 @@ to/from common data types
 /* Exports
 ==================== */
 export {
+	IEquatable, Equatable,
+	equal, notEqual, equalAs,
 	isEqual
 }
