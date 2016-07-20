@@ -28,8 +28,16 @@ these are the real stars of the show - the functions
 implied from the interfaces
 ========================================================== */
 
+/* Metafunctions
+Functions that modify or decorate morphisms in this category
+============================================================== */
+
+/* Constructors
+convert between elements (~instances) of two categories
+==================================== */
+
 /* Functors
-to/from common data types
+convert between morphisms (~functions) of two categories.
 ==================================== */
 
 /* Exports
