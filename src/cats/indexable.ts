@@ -32,7 +32,7 @@ with 'is' type-checking static method
 abstract class Indexable<C, T> extends Iterable<T> implements IIndexable<C, T> {
 	abstract getitem(i: C): T;
 	abstract keys(): Iterator<C>;
-	static is<C, T>(value: any): value is Indexed<C, T> {
+	static is<C, T>(value: any): value is Indexable<C, T> {
 		return (
 			Record.is<C, T>(value)
 			&& Iterable.is<T>(value)
@@ -43,19 +43,13 @@ abstract class Indexable<C, T> extends Iterable<T> implements IIndexable<C, T> {
 	// Mixin methods
 	iter(): Iterator<T> {
 		let keysIterator = this.keys();
+		let indexable = this;
 		return {
 			iter: function(){ return this },
-			next: function(){
-				let keyResult = keysIterator.next();
-				if (isNotDone<C>(keyResult)) {
-					return {
-						value: keyResult.value,
-						done: false
-					}
-				} else {
-					return {done: true}
-				}
-
+			next: function(): IterationResult<T> {				
+				return applyIfNotDone<C, T>(
+					keysIterator.next(),
+					(key) => indexable.getitem(key))
 			}
 		}
 	}
@@ -63,18 +57,11 @@ abstract class Indexable<C, T> extends Iterable<T> implements IIndexable<C, T> {
 		let keysIterator = this.keys();
 		let indexable = this;
 		return {
-			// @todo: be sure 'this' refers to the iterator, and not the indexable
 			iter: function(){ return this },
-			next: function(){
-				let keyResult = keysIterator.next();
-				if (isNotDone<C>(keyResult)) {
-					return {
-						value: [keyResult.value, indexable.getitem(keyResult.value)],
-						done: false
-					}
-				} else {
-					return { done: true }
-				}
+			next: function(): IterationResult<[C, T]> {
+				return applyIfNotDone<C, [C, T]>(
+					keysIterator.next(),
+					(key) => [key, indexable.getitem(key)])
 			}
 		}
 	}
@@ -100,11 +87,20 @@ function keys<C, T>(indexable: Indexable<C, T>): Iterator<C> {
 these are the real stars of the show - the functions
 implied from the interfaces
 ========================================================== */
+function find<C, T>(indexable: Indexable<C, T>, target: T): Iterable<C> {
+	/* Return all keys in indexable where the value is equal to target. */
+	let filtered: Iterable<[C, T]> = filter<[C, T]>(
+		indexable.items(), ([key, value]) => isEqual(value, target)
+	);
+	return applyToIterable<[C, T], C>(filtered, ([key, value]: [C, T]) => key)
+}
+
+
 
 /* Constructors
 to/from common data types
 ==================================== */
-// Typescript's definition of Array is missing keys()
+// Typescript's definition of Array is missing the .keys() method
 // So, add that to Array. -- used in From.Array
 interface Array<T> {
 	keys(): Iterator<number>
@@ -129,11 +125,14 @@ var From = {
 	Object: class IndexableFromObject extends Indexable<string, any> {
 		constructor(public data: Object){ super() }
 		keys(): Iterator<string> {
-			return IterableFrom.Array<string>(Object.keys(this.data))
+			return IteratorFrom.Array<string>(Object.keys(this.data))
 		}
 		getitem(i) { return this.data[i]}
 	}
 }
+
+/* Metafunctions and Functors
+=================================== */
 
 
 /* Exports
