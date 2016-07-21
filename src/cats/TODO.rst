@@ -1,18 +1,15 @@
-
-
-
 Short-term Goals
 ===================
 Should advanced me toward the mid-term goal of manifold.
 
+* reducable
+* appendable
+* joinable
+* monoid
+** interaction with foldable --> translate/build-up
+** Monoid + Foldable --> Traversable
 
-* Sized
-* Indexable: Record + Iterable
-** Generic funciton: enumerate() --> items(), keys(), Enumerator --> IndexIterator
-** Utility function: enumerate
-** Change references in other files
-** THEN: retire current enumerable.ts
-* Split iterable --> iterable and iterator (for seperate To/From)
+
 
 Mid-term Target Goal
 ========================
@@ -25,8 +22,6 @@ Manifold
 		ImmutableSequence
 	Joinable
 		Reducable
-			Foldable
-			Zeroable
 		Appendable
 	Traversable
 		Bindable
@@ -38,9 +33,17 @@ Manifold
 	~ maybe Monad
 
 
+
+
 Long-term Desires
 =======================
 These are cool, but not really needed.
+
+Use one or more of: liftable/monoid/traversable (in the signature) to make apply, fmap functions for:
+* example: apply<T, U extends Foldable<T> & Monoid<T>>(foldable: U): U
+* iterable, iterator - fmap
+* foldable
+* sequence
 
 Utility functions in categories (list here):
 * All Python builtins

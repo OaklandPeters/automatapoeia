@@ -3,12 +3,21 @@ import {isEqual} from './equatable';
 import {Iterator} from './iterator';
 
 
+
+/* Interfaces
+======================== */
+type FoldFunc<T, U> = (accumulator: U, element: T) => U;
+type PredicateFunc<T> = (value: T) => boolean;
+
 interface IFoldable<T> {
-	fold<U>(f: (first: U, second: T) => U, initial: U): U;
+	fold<U>(f: (accumulator: U, element: T) => U, initial: U): U;
 }
 
+/* Abstract Base Classes
+with 'is' type-checking static method
+========================================= */
 abstract class Foldable<T> implements IFoldable<T> {
-	abstract fold<U>(f: (first: U, second: T) => U, initial: U): U;
+	abstract fold<U>(f: (accumulator: U, element: T) => U, initial: U): U;
 	static is<T>(value: any): value is Foldable<T> {
 		return (value.fold instanceof Function)
 	}
@@ -17,7 +26,7 @@ abstract class Foldable<T> implements IFoldable<T> {
 
 /* Generic functions for Foldable
 ======================================= */
-function fold<T, U>(foldable: Foldable<T>, f: (first: U, second: T) => U, initial: U): U {
+function fold<T, U>(foldable: Foldable<T>, f: (accumulator: U, element: T) => U, initial: U): U {
 	return foldable.fold(f, initial)
 }
 
@@ -126,6 +135,7 @@ export {
 	IFoldable,
 	Foldable,
 	fold,
-	all, none,
-	foldIterable, IterableToFoldable
+	all, none, foldIterable,
+	From, To,
+	filter, filterFoldFunction
 }
