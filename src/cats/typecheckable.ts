@@ -20,6 +20,10 @@ interface ITypeCheckable {
 	is(value: any): boolean;
 }
 
+type TypeChecker = {
+	is: <T>(value: any) => value is T
+}
+
 /* Abstract Base Classes
 ========================================= */
 abstract class TypeCheckable implements ITypeCheckable {
