@@ -9,6 +9,7 @@ Should advanced me toward the mid-term goal of manifold.
 ** interaction with foldable --> translate/build-up
 ** Monoid + Foldable --> Traversable
 
+* Add 'isFoldableOf<T>(value, foldClass, innerClass) => value is T' function to Foldable that checks inner data type
 
 
 Mid-term Target Goal
