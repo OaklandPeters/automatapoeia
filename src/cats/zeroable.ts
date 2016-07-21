@@ -75,9 +75,21 @@ function isTruthy<Z extends Zeroable>(value: any, base: Class<Z>): boolean {
 }
 
 // Built-in data types which have a concept of 'zero', but no 'zero' method
-type NativelyZeroable = number | string | Array<any> | boolean;
+type NativelyZeroable = number | string | Array<any> | boolean | Map<any, any>;
 function nativeZero<T extends NativelyZeroable>(x: T): T {
-
+	if (typeof x === 'number') {
+		return 0 as any as T
+	} else if (typeof x === 'string') {
+		return "" as any as T
+	} else if (typeof x === 'boolean') {
+		return false as any as T
+	} else if (x instanceof Array) {
+		return [] as any as T
+	} else if (x instanceof Map) {
+		return new Map() as any as T;
+	} else {
+		throw "Variable is not a zeroable native-Javascript type: "+String(typeof(x));
+	}
 }
 function zeroOf<T extends NativelyZeroable | Zeroable>(x: T): T {
 	/*
@@ -89,16 +101,8 @@ function zeroOf<T extends NativelyZeroable | Zeroable>(x: T): T {
 	 */
 	if (Zeroable.is(x)) {
 		return (x as any as Zeroable).zero() as any as T
-	} else if (typeof x === 'number') {
-		return 0 as any as T
-	} else if (typeof x === 'string') {
-		return "" as any as T
-	} else if (typeof x === 'boolean') {
-		return false as any as T
-	} else if (x instanceof Array) {
-		return [] as any as T
-	} else if (x instanceof Map) {
-		return new Map() as any as T;
+	} else {
+		return nativeZero(x);
 	}
 }
 
@@ -122,8 +126,10 @@ to/from common data types
 /* Exports
 ==================== */
 export {
-	IZeroable, Zeroable,
-	isTruthy
+	IZeroable, Zeroable, isZeroable, zero,
+	isTruthy,
+	NativelyZeroable, nativeZero, zeroOf,
+	isZero, isZeroOf
 }
 
 
