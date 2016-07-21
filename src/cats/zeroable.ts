@@ -21,6 +21,7 @@ import {Class} from './cat_support';
 /* Interfaces
 ======================== */
 interface IZeroable extends Equatable {
+	zero(): IZeroable;
 } declare var IZeroable: {
 	zero(): IZeroable;
 }
