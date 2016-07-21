@@ -6,10 +6,15 @@
  * Although this is a heavily subjective decision, I will stick
  * to it for consistency.
  *
+ * Iterable vs Enumerable: Enumerable is Iterable applied to Records --
+ * data types with a concept of index or key. 
+ * iter(): IterationResult<T>, while enum(): IterationResult<[KeyType, T]>
  */
-import {IIterable, Iterable, IIterator, Iterator,
-	isNotDone, forEach, From as IterableFrom} from './iterable';
+import {IIterable, Iterable, forEach, filter, apply as applyToIterable} from './iterable';
+import {IIterator, Iterator, From as IteratorFrom} from './iterator';
+import {IterationResult, isNotDone, apply as applyIfNotDone} from './iteration_result';
 import {IRecord, Record} from './record';
+import {isEqual} from './equatable';
 
 
 /* Interfaces

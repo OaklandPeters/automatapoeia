@@ -1,5 +1,6 @@
-import {Iterable, Iterator, IterationResult, forEach, array_to_iterable} from './iterable';
+import {Iterable, forEach, From as IterableFrom} from './iterable';
 import {isEqual} from './equatable';
+import {Iterator} from './iterator';
 
 
 interface IFoldable<T> {
