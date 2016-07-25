@@ -1,7 +1,10 @@
 /**
  * Reduce is a fold operation on a zeroable data type,
  * which uses the zero as the initial state for the fold.
- * 
+ *
+ * Reduce's most-common usage is in 'join' operations - which flattens
+ * a structure via an append operation. This is so useful that it
+ * has it's own category - 'Joinable'
  */
 import {IFoldable, Foldable, all} from './foldable';
 import {IZeroable, Zeroable} from './zeroable';
@@ -73,5 +76,5 @@ convert between morphisms (~functions) of two categories.
 /* Exports
 ==================== */
 export {
-
+	IReducible, Reducible, reduce
 }
