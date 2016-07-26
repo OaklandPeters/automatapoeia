@@ -47,13 +47,19 @@ declare var ILiftable: {
 with 'is' type-checking static method
 ========================================= */
 abstract class Liftable<T> implements ILiftable<T> {
-	abstract new(value: T): Liftable<T>;
+	/*
+	Disclaimer: There is presently no way in typescript to state that the return
+	type of lift (static or instance) should be the same type as the class it's called
+	on, but with the generic parameter <U>  (IE   'this<U>'). This feature may be
+	coming in the future with higher-kinded types: https://github.com/Microsoft/TypeScript/issues/1213
+	 */
 	abstract lift<U>(value: U): Liftable<U>;
 	static lift: <U>(value: U) => Liftable<U>;
 	static is<T>(value: any): value is Liftable<T> {
 		return (value.lift instanceof Function)
 	}
 }
+
 
 /* Typechecking functions
 ================================================= */
