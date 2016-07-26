@@ -2,7 +2,6 @@ Short-term Goals
 ===================
 Should advanced me toward the mid-term goal of manifold.
 
-* appendable
 * joinable
 * monoid
 ** interaction with foldable --> translate/build-up
