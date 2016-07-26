@@ -6,19 +6,15 @@
  * a structure via an append operation. This is so useful that it
  * has it's own category - 'Joinable'
  */
-import {IFoldable, Foldable, all} from './foldable';
-import {IZeroable, Zeroable} from './zeroable';
+import {IFoldable, Foldable, fold, all} from './foldable';
+import {IZeroable, Zeroable, zero} from './zeroable';
 import {TypeCheckable, AnyType} from './typecheckable';
 
 /* Interfaces
 ======================== */
 interface IReducible<T> extends IFoldable<T>, IZeroable {
-	/*
-	Note: Zeroable requires an 'equal' function.
-	*/
 	equal(other: any): boolean;
 	fold<U>(f: (accumulator: U, element: T) => U, initial: U): U;
-	reduce(f: (accumulator: IReducible<T>, element: T) => IReducible<T>): IReducible<T>;
 } declare var IReducible: {
 	zero<U>(): IReducible<U>;
 }
@@ -32,11 +28,8 @@ with 'is' type-checking static method
 abstract class Reducible<T> implements IReducible<T> {
 	abstract fold<U>(f: (accumulator: U, element: T) => U, initial: U): U;
 	abstract equal(other: any): boolean;
-	abstract zero(): Reducible<T>;
-	static zero: <T>() => T;
-	reduce(f: (accumulator: Reducible<T>, element: T) => Reducible<T>): Reducible<T> {
-		return this.fold<Reducible<T>>(f, this.zero())
-	}
+	abstract zero(): this;
+	static zero: <T>() => Reducible<T>;
 	static is<T>(value: any): value is Reducible<T> {
 		return (Foldable.is<T>(value)
 			&&  Zeroable.is(value)
@@ -52,8 +45,8 @@ abstract class Reducible<T> implements IReducible<T> {
 /* Generic functions
 for each abstract method
 ================================================ */
-function reduce<T>(reducible: Reducible<T>, f: ReduceFunc<T, Reducible<T>>): Reducible<T> {
-	return reducible.reduce(f)
+function reduce<T, U extends Reducible<T>>(reducible: U, f: ReduceFunc<T, U>): U {
+	return fold<T, U>(reducible, f, reducible.zero())
 }
 
 /* Derivable functions
