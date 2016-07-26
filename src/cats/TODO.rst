@@ -2,13 +2,40 @@ Short-term Goals
 ===================
 Should advanced me toward the mid-term goal of manifold.
 
+Move Mixin: from Methods to functions
+----------------------------------------
+Medium-heavy rewrite.
+Move all derived mixin methods *off* of the class, and do the derivation inside the generic function for the mixin
+* WHY?  So that conditions can be placed on the type of structure (the structure would otherwise be the implicit 'this', and could not have conditions placed on it.)
+** Example: join(x: Joinable<Joinable<T>): Joinable<T>
+* Reducable: 
+* Joinable:
+* Indexable: .iter(), .items()
+* Iterator: .iter()
+* Skim cats/ directory for others that need htis
+
+Use generic-functions and NOT methods
+---------------------------------------
+Medium-heavy rewrite part II.
+For derived categories (based on other categories) AND in derived functions -- switch to only using the generic functions, and not direct access to the methods.
+* foldable: all, none, To.Array, filter
+** Iterable: foreach, filter, apply
+** Iterator: zip, zipLongest, enumerate
+
+
+Rewrite these
+-----------------
 * joinable
+** generic function: join<T>(joinable: Joinable<Joinable<T>>): Joinable<T>
+** generic function: flatten == join + dispatching: flatten<T>(joinable: Joinable<T | Joinable<T>>): Joinable<T>
 * monoid
 ** interaction with foldable --> translate/build-up
 ** Monoid + Foldable --> Traversable
 
+Misc
+---------
 * Add 'isFoldableOf<T>(value, foldClass, innerClass) => value is T' function to Foldable that checks inner data type
-
+* If I write Monoid, then creative 'native' monoid versions for number, array
 
 Mid-term Target Goal
 ========================
@@ -27,6 +54,7 @@ Manifold
 			Mappable
 
 	~ maybe Monoid
+		Derived functions: shove, functions for appending between types
 	~ maybe Space
 	~ maybe Category
 	~ maybe Monad
