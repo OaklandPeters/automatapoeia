@@ -55,7 +55,7 @@ function isZeroable(value: any): value is Zeroable {
 /* Generic functions
 for each abstract method
 ================================================ */
-function zero<Z extends Zeroable>(zeroable: Class<Z> & {zero: () => Z}): Z {
+function zero<Z extends Zeroable>(zeroable: Z): Z {
 	return zeroable.zero();
 }
 
