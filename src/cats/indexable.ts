@@ -1,4 +1,3 @@
-///<reference path="../../typings/es6-collections/es6-collections.d.ts"/>
 /**
  * Indexable collections are iterable records, which have an
  * iterable index of keys.
@@ -100,10 +99,16 @@ function find<C, T>(indexable: Indexable<C, T>, target: T): Iterable<C> {
 /* Constructors
 to/from common data types
 ==================================== */
-// Typescript's definition of Array is missing the .keys() method
-// So, add that to Array. -- used in From.Array
+// Typescript's definition of Array and Object are missing a few things. 
+// Array is missing the .keys() method - we use it in From.Array
+// Object & Array are also missing type-information on their indexes.
+// (which makes TS complain about implicit 'any' types)
 interface Array<T> {
 	keys(): Iterator<number>
+	[propname: number]: T;
+}
+interface Object {
+	[propname: string]: any;
 }
 
 // Indexable TO type X
