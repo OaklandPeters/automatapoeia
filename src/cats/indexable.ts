@@ -119,15 +119,15 @@ var To = {
 var From = {
 	Array: class IndexableFromArray<T> extends Indexable<number, T> {
 		constructor(public array: Array<T>){ super() }
-		keys() { return this.array.keys() }
-		getitem(i) { return this.array[i] }
+		keys(): Iterator<number> { return this.array.keys() }
+		getitem(i: number): T { return this.array[i] }
 	},
 	Object: class IndexableFromObject extends Indexable<string, any> {
 		constructor(public data: Object){ super() }
 		keys(): Iterator<string> {
 			return IteratorFrom.Array<string>(Object.keys(this.data))
 		}
-		getitem(i) { return this.data[i]}
+		getitem(i: string): any { return this.data[i]}
 	}
 }
 
