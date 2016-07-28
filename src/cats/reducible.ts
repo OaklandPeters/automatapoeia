@@ -15,11 +15,12 @@ import {TypeCheckable, AnyType} from './typecheckable';
 interface IReducible<T> extends IFoldable<T>, IZeroable {
 	equal(other: any): boolean;
 	fold<U>(f: (accumulator: U, element: T) => U, initial: U): U;
+	zero<U>(): IReducible<U>;
 } declare var IReducible: {
 	zero<U>(): IReducible<U>;
 }
 type FoldFunc<T, U> = (accumulator: U, element: T) => U;
-type ReduceFunc<T, U extends IReducible<T>> = FoldFunc<T, U>;
+type ReduceFunc<T, U extends IReducible<T>> = FoldFunc<U, U>;
 
 
 /* Abstract Base Classes
@@ -45,8 +46,8 @@ abstract class Reducible<T> implements IReducible<T> {
 /* Generic functions
 for each abstract method
 ================================================ */
-function reduce<T, U extends Reducible<T>>(reducible: U, f: ReduceFunc<T, U>): U {
-	return fold<T, U>(reducible, f, reducible.zero())
+function reduce<T, U extends IReducible<T>>(reducible: U, f: FoldFunc<U, U>): U {
+	return fold<U, U>(reducible, f, reducible.zero<T>() as U)
 }
 
 /* Derivable functions

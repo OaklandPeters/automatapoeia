@@ -8,7 +8,6 @@ Medium-heavy rewrite.
 Move all derived mixin methods *off* of the class, and do the derivation inside the generic function for the mixin
 * WHY?  So that conditions can be placed on the type of structure (the structure would otherwise be the implicit 'this', and could not have conditions placed on it.)
 ** Example: join(x: Joinable<Joinable<T>): Joinable<T>
-* Reducable: 
 * Joinable:
 * Indexable: .iter(), .items()
 * Iterator: .iter()
