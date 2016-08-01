@@ -20,7 +20,7 @@ interface IAppendable<T> {
 with 'is' type-checking static method
 ========================================= */
 abstract class Appendable<T> {
-	abstract append(other: this): this;
+	abstract append(other: Appendable<T>): Appendable<T>;
 	static is<T>(value: any): value is Appendable<T> {
 		return (value.append instanceof Function);
 	}
@@ -50,7 +50,7 @@ function append<T, U extends Appendable<T>>(appendable: U, other: U): U {
 		append(accumulator, base)  // infers type: U
 
 	*/
-	return appendable.append(other);
+	return appendable.append(other) as U;
 }
 
 

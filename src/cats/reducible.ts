@@ -20,7 +20,6 @@ interface IReducible<T> extends IFoldable<T>, IZeroable {
 	zero<U>(): IReducible<U>;
 }
 type FoldFunc<T, U> = (accumulator: U, element: T) => U;
-type ReduceFunc<T, U extends IReducible<T>> = FoldFunc<U, U>;
 
 
 /* Abstract Base Classes
@@ -29,8 +28,8 @@ with 'is' type-checking static method
 abstract class Reducible<T> implements IReducible<T> {
 	abstract fold<U>(f: (accumulator: U, element: T) => U, initial: U): U;
 	abstract equal(other: any): boolean;
-	abstract zero(): this;
-	static zero: <T>() => Reducible<T>;
+	abstract zero<U>(): Reducible<U>;
+	static zero: <U>() => Reducible<U>;
 	static is<T>(value: any): value is Reducible<T> {
 		return (Foldable.is<T>(value)
 			&&  Zeroable.is(value)
@@ -46,8 +45,8 @@ abstract class Reducible<T> implements IReducible<T> {
 /* Generic functions
 for each abstract method
 ================================================ */
-function reduce<T, U extends IReducible<T>>(reducible: U, f: FoldFunc<U, U>): U {
-	return fold<U, U>(reducible, f, reducible.zero<T>() as U)
+function reduce<T, U extends Reducible<T> & {zero: () => U}>(reducible: U, f: FoldFunc<T, U>): U {
+	return fold<T, U>(reducible, f, zero<U>(reducible))
 }
 
 /* Derivable functions

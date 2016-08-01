@@ -36,7 +36,7 @@ abstract class Zeroable implements IZeroable {
 	as both a static and instance method.
 	 */
 	abstract equal(other: any): boolean;
-	abstract zero(): this;
+	abstract zero(): Zeroable;
 	static zero:() => Zeroable;
 	static is(value: any): value is Zeroable {
 		return ((value.zero instanceof Function)
@@ -55,8 +55,11 @@ function isZeroable(value: any): value is Zeroable {
 /* Generic functions
 for each abstract method
 ================================================ */
-function zero<Z extends Zeroable>(zeroable: Z): Z {
-	return zeroable.zero();
+// function zero<Z extends Zeroable>(zeroable: Z): Z {
+// 	return zeroable.zero();
+// }
+function zero<T>(zeroable: {zero: () => T}): T {
+	return zeroable.zero() as T;
 }
 
 
