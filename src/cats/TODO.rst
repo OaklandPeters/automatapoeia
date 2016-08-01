@@ -2,13 +2,6 @@ Short-term Goals
 ===================
 Should advanced me toward the mid-term goal of manifold.
 
-Use generic-functions and NOT methods
----------------------------------------
-Medium-heavy rewrite part II.
-For derived categories (based on other categories) AND in derived functions -- switch to only using the generic functions, and not direct access to the methods.
-** Iterable: foreach, filter, apply
-** Iterator: zip, zipLongest, enumerate
-
 
 Rewrite these
 -----------------

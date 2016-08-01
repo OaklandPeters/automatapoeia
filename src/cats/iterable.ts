@@ -16,7 +16,7 @@ interface ForEachable<T> {
  */
 import {Foldable, all, To as FoldableTo} from './foldable';
 import {isEqual} from './equatable';
-import {IIterator, Iterator, From as IteratorFrom} from './iterator'
+import {IIterator, Iterator, From as IteratorFrom, next} from './iterator'
 import {IterationResult, apply as IterationResultApply, isNotDone} from './iteration_result';
 
 
@@ -53,9 +53,9 @@ function iterAs<T, Subject extends Base, Base extends Iterable<T>>(subject: Subj
 /* Derivable functions from Iterable/Iterator
 ================================================ */
 function forEach<T>(iterable: Iterable<T>, action: (value: T) => void): void {
-	let iterator = iterable.iter();
+	let iterator = iter(iterable);
 	while(true) {
-		let element = iterator.next();
+		let element = next(iterator);
 		if (isNotDone<T>(element)) {
 			action(element.value)
 		} else {
@@ -78,12 +78,12 @@ function fold<T, U>(iterable: Iterable<T>,
 function filter<T>(iterable: Iterable<T>, predicate: (value: T) => boolean): Iterable<T> {
 	return {
 		iter: function(): Iterator<T> {
-			let iterator = iterable.iter()
+			let iterator = iter(iterable)
 			return {
 				iter: function() { return this },
 				next: function(): IterationResult<T> {
 					while(true) {
-						let result = iterator.next()
+						let result = next(iterator)
 						if (isNotDone<T>(result)) {
 							// For IterationValue - filter out ones that don't meet predicate
 							if(predicate(result.value)) {
@@ -160,11 +160,11 @@ function apply<T, U>(iterable: Iterable<T>, f: (element: T) => U): Iterable<U> {
 	*/
 	return {
 		iter: function(): Iterator<U> {
-			let iterator = iterable.iter();
+			let iterator = iter(iterable);
 			return {
 				iter: function(){ return this },
 				next: function(): IterationResult<U> {
-					return IterationResultApply<T, U>(iterator.next(), f)
+					return IterationResultApply<T, U>(next(iterator), f)
 				}
 			}
 		}

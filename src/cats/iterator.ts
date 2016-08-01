@@ -1,4 +1,4 @@
-import {IIterable, Iterable, forEach} from './iterable';
+import {IIterable, Iterable, forEach, iter} from './iterable';
 import {IterationResult, IterationValue, apply as applyIfNotDone, isNotDone} from './iteration_result';
 
 /* Interfaces
@@ -76,7 +76,7 @@ function zip<T>(iterables: Array<Iterable<T>>): Iterator<Array<T>> {
 	when the shortest iterable is exhausted. See 'zipLongest' for a version
 	which pads the shorter iterables.
 	*/
-	let iterators = iterables.map<Iterator<T>>((value: Iterable<T>) => value.iter());
+	let iterators = iterables.map<Iterator<T>>((value: Iterable<T>) => iter(value));
 	return {
 		iter: function(){ return this },
 		next: function(): IterationResult<Array<T>> {
@@ -102,7 +102,7 @@ function zipLongest<T, U>(iterables: Array<Iterable<T>>, filler: U = undefined):
 		iter: function(){ return this },
 		next: function(): IterationResult<Array<T>> {
 			let results = iterators.map<IterationResult<T>>(
-				(_iter: Iterator<T>) => _iter.next());
+				(_iter: Iterator<T>) => next(_iter));
 			let anyDone = false;
 			let values = results.map<T|U>(
 				function(_result: IterationResult<T>): T|U {
@@ -127,13 +127,13 @@ function zipLongest<T, U>(iterables: Array<Iterable<T>>, filler: U = undefined):
 }
 
 function enumerate<T>(iterable: Iterable<T>): Iterator<[number, T]> {
-	let iterator = iterable.iter();
+	let iterator = iter(iterable);
 	let count = 0;
 	return {
 		iter: function(){ return this },
 		next: function(): IterationResult<[number, T]> {
 			let result = applyIfNotDone<T, [number, T]>(
-				iterator.next(), (value: T) => [count, value]);
+				next(iterator), (value: T) => [count, value]);
 			count = count + 1;
 			return result;
 		}
@@ -149,7 +149,7 @@ function apply<T, U>(iterator: Iterator<T>, f: (element: T) => U): Iterator<U> {
 	return {
 		iter: function(){ return this },
 		next: function(): IterationResult<U> {
-			return applyIfNotDone<T, U>(iterator.next(), f)
+			return applyIfNotDone<T, U>(next(iterator), f)
 		}
 	}
 }
@@ -179,7 +179,7 @@ convert between morphisms (~functions) of two categories.
 /* Exports
 ==================== */
 export {
-	IIterator, Iterator,
+	IIterator, Iterator, next,
 	ArrayIterator,
 	zip, zipLongest, enumerate,
 	To, From, apply
