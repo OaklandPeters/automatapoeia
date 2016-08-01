@@ -1,10 +1,19 @@
 /**
  * Join is a fold using the 'append' operation as the
  * operation and the zero as the initial value.
+ * This is a type-neutral (IE doesn't depend on Array) way to
+ * concatenate multiple instances of a container.
+ * 
+ * @todo: Provide examples of natural joins - for array, string
+ * @todo: Determine if 'join' should act like flatten - and be able
+ *   to operate on mixed nested and non-nested (this requires lift)
+ *   (and a guard function)
  */
-import {IAppendable, Appendable} from './appendable';
-import {IReducible, Reducible} from './reducible';
-import {ILiftable, Liftable} from './liftable';
+import {IAppendable, Appendable, append} from './appendable';
+import {IReducible, Reducible, reduce} from './reducible';
+import {ILiftable, Liftable, lift} from './liftable';
+import {zero} from './zeroable';
+import {Foldable, fold} from './foldable';
 
 
 /* Interfaces
@@ -15,11 +24,12 @@ interface IJoinable<T> extends IReducible<T>, IAppendable<T>, ILiftable<T> {
 	*/
 	equal(other: any): boolean;
 	fold<U>(f: (accumulator: U, element: T) => U, initial: U): U;
-	reduce(f: (accumulator: IJoinable<T>, element: T) => IJoinable<T>): IJoinable<T>;
 	append(other: IJoinable<T>): IJoinable<T>;
+	zero<U>(): IJoinable<U>;
+	lift<U>(value: U): IJoinable<U>;
 } declare var IJoinable: {
 	zero<U>(): IJoinable<U>;
-	lift<U>(): IJoinable<U>;
+	lift<U>(value: U): IJoinable<U>;
 }
 
 /* Abstract Base Classes
@@ -28,43 +38,11 @@ with 'is' type-checking static method
 abstract class Joinable<T> implements IJoinable<T> {
 	abstract fold<U>(f: (accumulator: U, element: T) => U, initial: U): U;
 	abstract equal(other: any): boolean;
-	abstract zero(): this;
-	abstract append(other: this): this;
-	abstract lift<T>(value: T): this;
-	static zero: <T>() => Joinable<T>;
-	static lift: <T>() => Joinable<T>;
-	reduce(f: (accumulator: this, element: T) => this): this {
-		return this.fold<this>(f, this.zero())
-	}
-
-
-	// join(): List<T> {	
-	// 	return this.reduce((accumulator: List<T>, next: T | List<T>) =>
-	// 		accumulator.append(
-	// 			List.is<T>(next) ? next : List.lift(next)
-	// 		)
-	// 	)
-	// }
-	// var arrayJoin = function(arr) {
-	//   return arr.reduce(
-	//     (accumulator, value) => accumulator.concat(isSameClass(arr, value) ? value : [value])
-	//   , [])
-	// }
-
-	join(guard?): this {
-		/*
-		... actually, I suspect this needs a conditional inside it
-		 */
-		if (guard === undefined) {
-			guard = (value) => isSameClass(this, value);
-		}
-
-		return this.reduce(
-			(accumulator: this, value: T | this) =>
-				guard(value) ? value : this.lift<T>(value)
-		);
-
-	}
+	abstract zero<U>(): Joinable<U>;
+	abstract append(other: IJoinable<T>): IJoinable<T>;
+	abstract lift<U>(value: U): IJoinable<U>;
+	static zero: <U>() => Joinable<U>;
+	static lift: <U>(value: U) => Joinable<U>;
 	static is<T>(value: any): value is Reducible<T> {
 		return (
 			Reducible.is<T>(value)
@@ -76,19 +54,35 @@ abstract class Joinable<T> implements IJoinable<T> {
 
 /* Typechecking functions
 ================================================= */
-function isSameClass(left, right): boolean {
-	return (left.constructor === right.constructor)
-}
 
 /* Generic functions
 for each abstract method
 ================================================ */
-
+function join<T, U extends IJoinable<T | IJoinable<T>>>(joinable: U): IJoinable<T> {
+	return reduce<T, IJoinable<T>>(
+		joinable,
+		function(accumulator: IJoinable<T>, element: T | IJoinable<T>): IJoinable<T> {
+			if (Joinable.is<T>(element)) {
+				return append(accumulator, element)
+			} else {
+				return append(accumulator, lift(accumulator, element))
+			}
+		}
+	)
+}
 
 /* Derivable functions
 these are the real stars of the show - the functions
 implied from the interfaces
 ========================================================== */
+function arrayJoin<T>(array: Array<T | Array<T>>): Array<T> {
+	/* Example native join operation, on built-in Javascript arrays. */
+	return array.reduce<Array<T>>(
+		(acc: Array<T>, elm: Array<T> | T) =>
+			(elm instanceof Array) ? acc.concat(elm) : acc.concat([elm]),
+		[] as Array<T>
+	)
+}
 
 /* Metafunctions
 Functions that modify or decorate morphisms in this category
@@ -105,5 +99,6 @@ convert between morphisms (~functions) of two categories.
 /* Exports
 ==================== */
 export {
-	IJoinable
+	IJoinable, Joinable, join,
+	arrayJoin
 }
