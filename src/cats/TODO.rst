@@ -2,17 +2,6 @@ Short-term Goals
 ===================
 Should advanced me toward the mid-term goal of manifold.
 
-Move Mixin: from Methods to functions
-----------------------------------------
-Medium-heavy rewrite.
-Move all derived mixin methods *off* of the class, and do the derivation inside the generic function for the mixin
-* WHY?  So that conditions can be placed on the type of structure (the structure would otherwise be the implicit 'this', and could not have conditions placed on it.)
-** Example: join(x: Joinable<Joinable<T>): Joinable<T>
-* Joinable:
-* Indexable: .iter(), .items()
-* Iterator: .iter()
-* Skim cats/ directory for others that need htis
-
 Use generic-functions and NOT methods
 ---------------------------------------
 Medium-heavy rewrite part II.

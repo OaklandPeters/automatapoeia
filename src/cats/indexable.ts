@@ -21,7 +21,6 @@ import {isEqual} from './equatable';
 type IItem<C, T> = [C, T];
 interface IIndexable<C, T> extends IRecord<C, T>, IIterable<T> {
 	keys(): IIterator<C>;
-	items(): IIterator<IItem<C, T>>;
 }
 
 
@@ -52,18 +51,6 @@ abstract class Indexable<C, T> extends Iterable<T> implements IIndexable<C, T> {
 			}
 		}
 	}
-	items(): Iterator<IItem<C, T>> {
-		let keysIterator = this.keys();
-		let indexable = this;
-		return {
-			iter: function(){ return this },
-			next: function(): IterationResult<[C, T]> {
-				return applyIfNotDone<C, [C, T]>(
-					keysIterator.next(),
-					(key) => [key, indexable.getitem(key)])
-			}
-		}
-	}
 }
 
 
@@ -75,7 +62,15 @@ abstract class Indexable<C, T> extends Iterable<T> implements IIndexable<C, T> {
 for each abstract method
 ================================================ */
 function items<C, T>(indexable: Indexable<C, T>): Iterator<IItem<C, T>> {
-	return indexable.items()
+	let keysIterator = indexable.keys();
+	return {
+		iter: function(){ return this },
+		next: function(): IterationResult<[C, T]> {
+			return applyIfNotDone<C, [C, T]>(
+				keysIterator.next(),
+				(key) => [key, indexable.getitem(key)])
+		}
+	}
 }
 
 function keys<C, T>(indexable: Indexable<C, T>): Iterator<C> {
@@ -89,7 +84,7 @@ implied from the interfaces
 function find<C, T>(indexable: Indexable<C, T>, target: T): Iterable<C> {
 	/* Return all keys in indexable where the value is equal to target. */
 	let filtered: Iterable<[C, T]> = filter<[C, T]>(
-		indexable.items(), ([key, value]) => isEqual(value, target)
+		items(indexable), ([key, value]) => isEqual(value, target)
 	);
 	return applyToIterable<[C, T], C>(filtered, ([key, value]: [C, T]) => key)
 }
@@ -115,7 +110,7 @@ interface Object {
 var To = {
 	Map: function<C, T>(indexable: Indexable<C, T>): Map<C, T> {
 		let _map = new Map<C, T>();
-		forEach<[C, T]>(indexable.items(), ([key, value]) => _map.set(key, value))
+		forEach<[C, T]>(items(indexable), ([key, value]) => _map.set(key, value))
 		return _map
 	}
 }
