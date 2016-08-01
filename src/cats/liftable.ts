@@ -65,10 +65,12 @@ abstract class Liftable<T> implements ILiftable<T> {
 ================================================= */
 
 
+
 /* Generic functions
 ================================================ */
-function lift<T extends Liftable<U>, U>(klass: {new(x: U): T, lift(x:U): T}, x: U): T {
-	return klass.lift(x)
+// function lift<T extends Liftable<U>, U>(klass: {new(x: U): T, lift(x:U): T}, x: U): T {
+function lift<T extends Liftable<U>, U>(liftable: {lift(x:U): T}, x: U): T {
+	return liftable.lift(x)
 }
 
 
