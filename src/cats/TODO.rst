@@ -27,6 +27,7 @@ Rewrite these
 * joinable
 ** generic function: join<T>(joinable: Joinable<Joinable<T>>): Joinable<T>
 ** generic function: flatten == join + dispatching: flatten<T>(joinable: Joinable<T | Joinable<T>>): Joinable<T>
+
 * monoid
 ** interaction with foldable --> translate/build-up
 ** Monoid + Foldable --> Traversable
@@ -35,6 +36,11 @@ Misc
 ---------
 * Add 'isFoldableOf<T>(value, foldClass, innerClass) => value is T' function to Foldable that checks inner data type
 * If I write Monoid, then creative 'native' monoid versions for number, array
+
+Examples / Conversations
+--------------------------
+* string versions for fold, reduce, and monoid
+
 
 Mid-term Target Goal
 ========================
