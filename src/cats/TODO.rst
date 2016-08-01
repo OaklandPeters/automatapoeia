@@ -6,7 +6,6 @@ Use generic-functions and NOT methods
 ---------------------------------------
 Medium-heavy rewrite part II.
 For derived categories (based on other categories) AND in derived functions -- switch to only using the generic functions, and not direct access to the methods.
-* foldable: all, none, To.Array, filter
 ** Iterable: foreach, filter, apply
 ** Iterator: zip, zipLongest, enumerate
 

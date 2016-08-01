@@ -43,14 +43,14 @@ function foldAs<T, U, Subject extends Base, Base extends Foldable<T>>(
 =============================== */
 function all<T>(foldable: Foldable<T>, predicate: (value: T) => boolean = Boolean) {
 	/* Non-short-circuiting 'and' operation' */
- 	return foldable.fold<boolean>((accumulator, element) => 
+	return fold<T, boolean>(foldable, (accumulator, element) => 
  		accumulator && predicate(element), true);
 }
 
 function none<T>(foldable: Foldable<T>, predicate: (value: T) => boolean = Boolean) {
 	/* Non-short-circuiting 'and' operation. Would be called 'any',but that's
 	already defined in TypeScript. */
-	return foldable.fold<boolean>((accumulator, element) =>
+	return fold<T, boolean>(foldable, (accumulator, element) =>
 		accumulator || predicate(element), false);
 }
 
@@ -77,7 +77,8 @@ var From = {
 
 var To = {
 	Array: function foldable_to_array<T>(foldable: Foldable<T>): Array<T> {
-		return foldable.fold<Array<T>>((acc, elm) => acc.concat([elm]), [] as Array<T>)
+		return fold<T, Array<T>>(foldable, (acc, elm) => acc.concat([elm]),
+			[] as Array<T>);
 	},
 	Iterator: function foldable_to_iterator<T, U>(foldable: Foldable<T>, initial: U,
 		folder: (accumulator: U, element: T) => U
@@ -105,7 +106,7 @@ function filter<T>(foldable: Foldable<T>, predicate: PredicateFunc<T>): Foldable
 					return accumulator
 				}
 			}
-			return this.original.fold(filter_f, initial)
+			return fold<T, U>(foldable, filter_f, initial)
 		}
 	} as Foldable<T>
 	// (2) try to clone the object, but with this new fold function
