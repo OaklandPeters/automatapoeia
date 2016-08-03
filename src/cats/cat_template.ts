@@ -9,10 +9,17 @@
 ======================== */
 
 
+
 /* Abstract Base Classes
 with 'is' type-checking static method
 ========================================= */
 
+/* Laws
+Assertion functions expressing something which must
+be true about the category for it to be sensible, and
+are part of its definition, but are not expressible
+in the type-system.
+================================================= */
 
 /* Typechecking functions
 ================================================= */
