@@ -1,8 +1,11 @@
 /**
+ * 'Liftable' corresponds to the concept of a generic 'container' that can
+ * contain other data-types. You can take a single other variable, and 'lift'
+ * it into the container.
  * 
- * Traditionally:
+ * Traditionally (IE in Haskell):
  * Lift implies a container than can contain any other type of variable,
- * and consequently, you can 'lift' any other single variable into that container.
+ * and consequently, you can 'lift' *any* other single variable into that container.
  * For example, all monads in Haskell are these 'universally' Liftable containers.
  * In category-theory terms, traditional liftable would be a type of universal functor.
  *
@@ -39,7 +42,6 @@ interface ILiftable<T> {
 }
 // Static side
 declare var ILiftable: {
-	new <T>(value: T): ILiftable<T>;
 	lift<U>(value: U): ILiftable<U>;
 }
 
