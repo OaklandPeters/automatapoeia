@@ -58,6 +58,24 @@ abstract class Joinable<T> implements IJoinable<T> {
 /* Generic functions
 for each abstract method
 ================================================ */
+
+function _join<T, U extends IJoinable<IJoinable<T>>>(joinable: U): IJoinable<T> {
+	/*
+	
+	 */
+	let jj = zero<IJoinable<T>>joinable.zero();
+	jj
+	return fold<T, IJoinable<T>>(
+
+	)
+	return reduce<T, IJoinable<T>>(
+		joinable,
+		function(accumulator: IJoinable<T>, element: IJoinable<T>): IJoinable<T> {
+				return append(accumulator, element)
+		}
+	)
+}
+
 function join<T, U extends IJoinable<T | IJoinable<T>>>(joinable: U): IJoinable<T> {
 	return reduce<T, IJoinable<T>>(
 		joinable,

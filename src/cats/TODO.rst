@@ -3,12 +3,6 @@ Short-term Goals
 Should advanced me toward the mid-term goal of manifold.
 
 
-Rewrite these
------------------
-* joinable
-** generic function: join<T>(joinable: Joinable<Joinable<T>>): Joinable<T>
-** generic function: flatten == join + dispatching: flatten<T>(joinable: Joinable<T | Joinable<T>>): Joinable<T>
-
 * monoid
 ** interaction with foldable --> translate/build-up
 ** Monoid + Foldable --> Traversable
@@ -45,7 +39,13 @@ Manifold
 	~ maybe Category
 	~ maybe Monad
 
-
+Optional Goals
+===================
+'Natural' version of generic function: new section for template, and organization for existing categories.
+Applies the generic function to built-in Javascript data-types
+* This ~might~ be best implemented with the To/From converters.
+* Array: foldable, zeroable, reducable, appendable, liftable, joinable, monoid, sized
+* Object: foldable, reducable, joina
 
 
 Long-term Desires
