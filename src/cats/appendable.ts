@@ -79,6 +79,36 @@ convert between elements (~instances) of two categories
 convert between morphisms (~functions) of two categories.
 ==================================== */
 
+/* Native versions
+equivalents to this categories' method,
+for built-in Javascript types
+====================================== */
+interface ObjectLike extends Object {
+	// Extend Builtin TypeScript Object to specify keys
+	[key: string]: any;
+}
+
+var Native = {
+	Number: (x: number , y: number) => x + y,
+	String: (x: string, y: string) => x.concat(y),
+	Array: <T>(x: Array<T>, y: Array<T>) => x.concat(y),
+	Object: function<T extends ObjectLike, U extends ObjectLike>(x: T, y: U): T & U {
+		let merged = {} as {
+			[key: string]: any
+		};
+		for (let name in x) {
+			merged[name] = x[name];
+		}
+	    for (var name in y) {
+	    	merged[name] = y[name];
+		}
+		return merged as T & U;
+	}
+}
+
+
+
+
 /* Exports
 ==================== */
 export {

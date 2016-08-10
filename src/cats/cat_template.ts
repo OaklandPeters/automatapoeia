@@ -47,6 +47,12 @@ convert between elements (~instances) of two categories
 convert between morphisms (~functions) of two categories.
 ==================================== */
 
+/* Native versions
+equivalents to this categories' method,
+for built-in Javascript types
+====================================== */
+
+
 /* Exports
 ==================== */
 export {

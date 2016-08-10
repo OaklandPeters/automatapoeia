@@ -143,6 +143,24 @@ function isZeroOf<Z extends IZeroable>(x: any, zeroable: Class<Z> & {zero: () =>
 to/from common data types
 ==================================== */
 
+
+/* Native versions
+equivalents to this categories' method,
+for built-in Javascript types
+====================================== */
+// Reminder: the zero of a type only truly has meaning
+// in relation to it's 'append' operation
+let Native = {
+	string: () => "",
+	number: () => 0,
+	Array: <T>() => [] as Array<T>,
+	Object: () => {},
+	Set: () => new Set(),
+	WeakSet: () => new WeakSet(),
+	Map: () => new Map(),
+	WeakMap: () => new WeakMap(),
+}
+
 /* Exports
 ==================== */
 export {

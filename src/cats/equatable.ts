@@ -57,13 +57,17 @@ implied from the interfaces
 ========================================================== */
 function isEqual(left: any, right: any): boolean {
 	/* Checks equality, dispatching over 'equal' methods if they exist; if not
-	then checks equality with '==='. */
+	then checks equality with '==='.
+	
+	*/
 	if (left.equal instanceof Function) {
 		return left.equal(right)
 	} else if (right.equal instanceof Function) {
 		return right.equal(left)
 	} else {
-		return (left === right)
+		// Encompases almost all of the JS-builtin equialities
+		// Especially including array
+		return Object.is(left, right)
 	}
 }
 
@@ -72,10 +76,27 @@ function isEqual(left: any, right: any): boolean {
 to/from common data types
 ==================================== */
 
+/* Native and utility functions
+==================================== */
+let Native = {
+	Array: function arrayEquals(left: Array<any>, right: Array<any>): boolean {
+		// I don't think this actually recurses down nested Arrays properly...
+		// @todo: fix that
+		return left.every((lValue: any, index: number) =>
+			isEqual(left[index], right[index]))
+	},
+	Number: (left: number, right: number) => (left === right),
+	String: (left: number, right: number) => (left === right),
+	Object: (left: Object, right: Object) => Object.is(left, right)
+};
+
+
+
 /* Exports
 ==================== */
 export {
 	IEquatable, Equatable,
 	equal, notEqual, equalAs,
-	isEqual
+	isEqual,
+	Native
 }
