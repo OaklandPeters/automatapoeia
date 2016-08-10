@@ -9,6 +9,8 @@
 import {IFoldable, Foldable, fold, all} from './foldable';
 import {IZeroable, Zeroable, zero} from './zeroable';
 import {TypeCheckable, AnyType} from './typecheckable';
+import {isEqual} from './equatable';
+
 
 /* Interfaces
 ======================== */
@@ -45,7 +47,7 @@ abstract class Reducible<T> implements IReducible<T> {
 /* Generic functions
 for each abstract method
 ================================================ */
-function reduce<T, U extends Reducible<T> & {zero: () => U}>(reducible: U, f: FoldFunc<T, U>): U {
+function reduce<T, U extends Reducible<T>>(reducible: U, f: FoldFunc<T, U>): U {
 	return fold<T, U>(reducible, f, zero<U>(reducible))
 }
 
@@ -61,6 +63,32 @@ Functions that modify or decorate morphisms in this category
 /* Constructors
 convert between elements (~instances) of two categories
 ==================================== */
+var From = {
+	Array: function<T>(array: Array<T>): Reducible<T> {
+		return {
+			fold: function<U>(f: FoldFunc<T, U>, initial: U): U {
+				array.reduce<U>(f, initial)
+			},
+			zero: function<U>(): Reducible<U> {
+				return From.Array<U>([] as Array<U>)
+			},
+			equal: function(other: any): boolean {
+				if (other instanceof Array) {
+					return array.every((value: T, index: number) =>
+						(isEqual(array[index], other[index])))
+				} else {
+					return false
+				}
+			}
+		}
+	}
+};
+
+var To = {
+	Array: function reducible_to_array<T, U extends Reducible<T>>(reducible: U): Array<T> {
+		return fold<T, Array<T>>(reducible, (acc, elm) => acc.concat([elm]), [])
+	},
+};
 
 /* Functors
 convert between morphisms (~functions) of two categories.

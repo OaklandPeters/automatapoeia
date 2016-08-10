@@ -38,8 +38,14 @@ function merge<T, U extends Appendable<T> & {zero: () => U}>(
 
 }
 
+Iterable/Iterator
+------------------
+* range: range(stop), range(start, stop), range(start, stop, step) : Iterator<number>
+** Beware the arguments bug
+
 Misc
 ---------
+* iterable.ts: To.Foldable - make this not a class, but return an object literal
 * Add 'isFoldableOf<T>(value, foldClass, innerClass) => value is T' function to Foldable that checks inner data type
 * If I write Monoid, then creative 'native' monoid versions for number, array
 
@@ -69,10 +75,6 @@ Manifold
 	~ maybe Space
 	~ maybe Category
 	~ maybe Monad
-
-
-
-
 
 
 Optional Goals: More parts to the template
@@ -114,3 +116,9 @@ Expresses the category-theoretic interfaces and methods, but closely corresponds
 * Number: Monoid NOT Foldable NOT Liftable
 * Array: Monoid AND Foldable AND Liftable
 * String: Monoid AND Foldable NOT Liftable
+
+Proxy-Object Enhancements
+---------------------------
+This will only work once proxy objects are included (late ES6). But, for the various constructors and converters (I've written these for most categories), I'll return an
+object with the correct methods. This would be better handled via a proxy around the
+object which was passed in.

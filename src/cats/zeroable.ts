@@ -1,16 +1,8 @@
 /**
- * 
- * 
  * Defines an empty or null element of a category.
  * This 'Zero' element has meaning relative to the 'Append' function,
  * as used by the Monoid category, which obeys the following rule:
- *   function MonoidLaw<M extends Monoid>(monoid: Class<M>){
- *       let x = new SomeMonoid()
- *       let y = x.append(SomeMonoid.zero())
- *       assert(x == y)
- *       let z = SomeMonoid.zero().append(x)
- *       assert(x == z)
- *   }
+ *   equals(append(x, x.zero()), x) === true
  *
  * @todo: create a version of isZeroable that accounts for native types
  */
@@ -58,8 +50,8 @@ for each abstract method
 // function zero<Z extends Zeroable>(zeroable: Z): Z {
 // 	return zeroable.zero();
 // }
-function zero<T>(zeroable: {zero: () => T}): T {
-	return zeroable.zero() as T;
+function zero<U extends Zeroable>(zeroable: U): U {
+	return zeroable.zero() as U;
 }
 
 
