@@ -16,7 +16,7 @@ interface ForEachable<T> {
  */
 import {Foldable, all, To as FoldableTo} from './foldable';
 import {isEqual} from './equatable';
-import {IIterator, Iterator, From as IteratorFrom, next} from './iterator'
+import {IIterator, Iterator, From as IteratorFrom, next, RangeIterator} from './iterator'
 import {IterationResult, apply as IterationResultApply, isNotDone} from './iteration_result';
 
 
@@ -73,7 +73,6 @@ function fold<T, U>(iterable: Iterable<T>,
 	forEach(iterable, (value) => (accumulator = folder(accumulator, value)))
 	return accumulator;
 }
-
 
 function filter<T>(iterable: Iterable<T>, predicate: (value: T) => boolean): Iterable<T> {
 	return {
@@ -134,7 +133,7 @@ var To = {
 		fold<U>(folder: (accumulator: U, element: T) => U, initial: U): U {
 			return fold<T, U>(this.iterable, folder, initial)
 		}
-	}
+	},
 }
 
 // Iterable FROM type X

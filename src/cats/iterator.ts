@@ -1,5 +1,5 @@
-import {IIterable, Iterable, forEach, iter} from './iterable';
-import {IterationResult, IterationValue, apply as applyIfNotDone, isNotDone} from './iteration_result';
+import {IIterable, Iterable, forEach, iter, fold as foldIterable} from './iterable';
+import {IterationResult, IterationValue, IterationDone, apply as applyIfNotDone, isNotDone} from './iteration_result';
 
 /* Interfaces
 ======================== */
@@ -57,13 +57,38 @@ class ArrayIterator<T> extends Iterator<T> {
 
 	next(): IterationResult<T> {
 		if (this.counter >= this.data.length) {
-			return {done: false}
+			return {done: true}
 		} else {
 			let value = this.data[this.counter];
 			this.counter = this.counter + 1;
-			return {value: value, done: true};
+			return {value: value, done: false};
 		}
 	}
+}
+
+class RangeIterator extends Iterator<number> {
+	/*
+	 */
+	counter: number;
+
+	constructor(public stop: number, public start: number = 0, public step: number = 1) {
+		super();
+		this.counter = this.start;
+	}
+
+	next(): IterationResult<number> {
+		let current = this.counter;
+		this.counter = this.counter + this.step;
+		if (current >= this.stop) {
+			return {done: true};
+		} else {
+			return {done: false, value: current};
+		}
+	}
+}
+
+function range(stop: number, start: number = 0, step: number = 1): Iterator<number> {
+	return new RangeIterator(stop, start, step)
 }
 
 function allDone<T>(results: Array<IterationResult<T>>): results is Array<IterationValue<T>> {
@@ -141,6 +166,7 @@ function enumerate<T>(iterable: Iterable<T>): Iterator<[number, T]> {
 }
 
 
+
 /* Metafunctions
 Functions that modify or decorate morphisms in this category
 ============================================================== */
@@ -157,11 +183,20 @@ function apply<T, U>(iterator: Iterator<T>, f: (element: T) => U): Iterator<U> {
 /* Constructors
 convert between elements (~instances) of two categories
 ==================================== */
+import {Foldable, fold} from './foldable';
+
 var To = {
-	Array: function<T>(iterator: Iterator<T>): Array<T> {
+	Array: function iteratorToArray<T>(iterator: Iterator<T>): Array<T> {
 		let accumulator = new Array();
 		forEach(iterator, (value) => accumulator.push())
 		return accumulator
+	},
+	Foldable: function iteratorToFoldable<T>(iterator: Iterator<T>): Foldable<T> {
+		return {
+			fold: function foldIterator<U>(f: (accumulator: U, element: T) => U, initial: U): U {
+				return foldIterable<T, U>(iterator, f, initial)
+			}
+		}
 	}
 }
 
@@ -182,5 +217,6 @@ export {
 	IIterator, Iterator, next,
 	ArrayIterator,
 	zip, zipLongest, enumerate,
-	To, From, apply
+	To, From, apply,
+	RangeIterator, range
 }
