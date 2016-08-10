@@ -14,7 +14,7 @@ counts as an object, so 'Object' ~ 'Any'
 /* Javascript Built-in Types
 ================================== */
 // None of these in
-type Builtin = Primitive | Native;
+type Native = Primitive | NativeClasses;
 
 // Primitive data types in Javascript, besides object.
 // These are things which may need to be handled different than
@@ -23,19 +23,21 @@ type Builtin = Primitive | Native;
 type Primitive = string | number | boolean | symbol | Function;
 
 // Non-Primitive data structures builtin to ES6-era Javascript
-// These all have typeof === object
-type Native = NativeMisc | NativeIndexedCollections | NativeKeyedCollections;
-// type Native = (Array<any> | Date | Map<any, any> | WeakMap<any, any>
-// 	| Set<any> | WeakSet<any> | JSON | RegExp | Error);
+// These all have typeof === 'object'
+type NativeClasses = NativeMisc | NativeIndexedCollections | NativeKeyedCollections;
 
 type NativeMisc = (Date | JSON | RegExp | Error);
 
-type NativeIndexedCollections = (Array<any> | Int8Array | Uint8Array | Uint8ClampedArray
+type NativeIndexedCollections = (
+	Array<any> | Int8Array | Uint8Array | Uint8ClampedArray
 	| Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array
-	| Float64Array);
+	| Float64Array
+);
 
-type NativeKeyedCollections = (Map<any, any> | WeakMap<any, any>
-	| Set<any> | WeakSet<any>);
+type NativeKeyedCollections = (
+	Map<any, any> | WeakMap<any, any>
+	| Set<any> | WeakSet<any>
+);
 
  
 /* Utility Types for TypeScript
@@ -163,11 +165,10 @@ class LawTests<Klass> extends UnitTests {
 	}
 }
 
-
 export {
-	Builtin, Primitive,
-	Native, NativeMisc, NativeIndexedCollections, NativeKeyedCollections,
-	Class, assertType, assert,
-	Exception, AssertionException,
-	LawTests
+	Native, Primitive, NativeClasses,
+	NativeMisc, NativeIndexedCollections, NativeKeyedCollections,
+	Class,
+	assertType, assert, Exception, AssertionException,
+	TestLog, UnitTests, LawTests
 }
