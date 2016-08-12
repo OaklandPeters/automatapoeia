@@ -54,10 +54,11 @@ Examples / Conversations
 * string versions for fold, reduce, and monoid
 
 
-Mid-term Target Goal
-========================
-Complete dependencies for Manifold
+Mid-term Target Goals
+=============================================
 
+Complete dependencies for Manifold
+-----------------------------------
 Manifold
 	ImmutableVector
 		Vector
@@ -69,12 +70,22 @@ Manifold
 	Traversable
 		Bindable
 			Mappable
-
-	~ maybe Monoid
-		Derived functions: shove, functions for appending between types
 	~ maybe Space
 	~ maybe Category
 	~ maybe Monad
+
+
+Functors for core categories
+------------------------------
+* Prerequisite 1: enough categories that are meaningfully convertible to each other.
+** So finish: Foldable, Joinable, Monoid, Sequence, Vector, maybe Monad
+** REALIZATION: functors require 'Mappable', which is close to the definition of Monad. So I should write the Monad category first
+* Prerequisite 2: Add function interfaces (Morphisms) operating on a category
+** ex. type Foldable.Morphism = <T>(pre: Foldable<T>) => Foldable<T>
+** Note: this discusses translating the instances of the container, and not the non-instantiated static constainer itself
+* Technically Functors can convert elements and morphisms. So I'll need to write some function converters operating on the function-interfaces defined in prerequisite 2
+** ex. IterableMorphismToFoldable = (pre: Iterable.Morphism) => Foldable.Morphism
+* Ideally, this can be used to have some way to articulate this for non-instantiated static classes. Ex.  IterableClassToFoldableClass = (pre: {lift: <T>(elm: T) => Iterable<T>}) => {lift: <T>(elm: T) => Foldable<T>}
 
 
 Optional Goals: More parts to the template
