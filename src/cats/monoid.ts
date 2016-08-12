@@ -1,11 +1,17 @@
 /**
- * Template for the sections in a category file.
+ * Monoids are one of the most commonly encountered and studied
+ * structures. However, it is also a very simple structure - and
+ * it has no notion of how to get data *into* the category.
+ * 
+ * We will introduce with 'liftable', which will give us Flattenable,
+ * and eventually Monad.
  * 
  * Monoids are defined by their binary opertion, and an identity element.
  * In this library, we are calling these 'append' and 'zero'.
  *
  * Note: Monoids are not necessarily containers, and hence are not
  *   necessarily generic-classes either.
+ * 
  */
 import {IZeroable, Zeroable, zero} from './zeroable';
 import {IAppendable, Appendable, append} from './appendable';
@@ -16,9 +22,6 @@ import {equal} from './equatable';
 /* Interfaces
 ======================== */
 interface IMonoid extends IAppendable, IZeroable {
-	/*
-	
-	 */
 	equal(other: any): boolean;
 	append(other: IMonoid): IMonoid;
 	zero(): IMonoid;
@@ -40,22 +43,6 @@ abstract class Monoid implements IMonoid {
 			&& Appendable.is(value)
 		)
 	}
-}
-
-/* Laws
-Assertion functions expressing something which must
-be true about the category for it to be sensible, and
-are part of its definition, but are not expressible
-in the type-system.
-================================================= */
-function append_identity_law<U extends IMonoid>(monoid: U): boolean {
-	let left = append(zero(monoid), monoid);
-	let right = append(monoid, zero(monoid));
-	return (
-	       monoid.equal(left)
-	    && monoid.equal(right)
-	    && left.equal(right)
-	)
 }
 
 /* Typechecking functions
@@ -177,8 +164,28 @@ class Laws<M extends Monoid> extends LawTests<M> {
 		assert(equal(append(zero(x), x), x),
 			"Failed right append equality: '0 + x === x', for seed = {this.seed}");
 	}
+
+	test_append_identity_law(): void {
+
+	}
 }
 
+
+/* Laws
+Assertion functions expressing something which must
+be true about the category for it to be sensible, and
+are part of its definition, but are not expressible
+in the type-system.
+================================================= */
+function append_identity_law<U extends IMonoid>(monoid: U): boolean {
+	let left = append(zero(monoid), monoid);
+	let right = append(monoid, zero(monoid));
+	return (
+	       monoid.equal(left)
+	    && monoid.equal(right)
+	    && left.equal(right)
+	)
+}
 
 
 /* Exports
