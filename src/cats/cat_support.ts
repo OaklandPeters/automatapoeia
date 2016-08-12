@@ -47,13 +47,8 @@ type Class<T> = {new(...values: Array<any>): T};
 
 /* Assertions
 ===================================== */
-interface IException {
-    name: string;
-    message: string;
-    stack: string|void;
-}
-
-class Exception implements IException {
+class Exception implements Error {
+	/* Concrete implementation of the builtin Error interface */
 	constructor(
 		public name: string,
 		public message?: string,
@@ -95,7 +90,31 @@ function assertType<T>(value: any, predicate: (x: any) => boolean): value is T {
 
 /* Law-based unit-testing utility
 ===================================== */
-interface TestLog extends Array<[any]> {}
+type TestResultKind = "pass" | "fail" | "error";
+
+interface ITestMethodSummary {
+	name: string,
+	passed: boolean,
+	kind: TestResultKind,
+	message?: string,
+	stack?: string
+}
+
+interface ITestLog extends Array<ITestMethodSummary> {}
+
+
+
+class TestMethodSummary {
+	constructor(
+		public name: string,
+		public passed: boolean,
+		public kind: TestResultKind,
+		public message?: string,
+		public stack?: string
+	) {}
+	// toString(): string {}
+}
+
 
 class UnitTests {
 	/*
@@ -104,27 +123,30 @@ class UnitTests {
 	@todo: refactor this into UnitTest, and LawTests which extends it
 	@todo: Give a better type to the TestLog
 	*/
-	log: TestLog;
+	log: ITestLog;
 	constructor() {
 		this.log = [];
 	}
-	run(names: Array<string>): TestLog {
+	runMethod(name: string): ITestMethodSummary {
+		let method = (this as any)[name];
+		// Execute the test methods - catching assertion errors
+		let passed = true;
+		let exception: Error;
+		try {
+			method();
+		} catch (err) {
+			passed = false;
+			exception = err;
+		}
+		if (passed) {
+			return this.declareSuccess(name);
+		} else {
+			return this.declareException(name, exception);
+		}
+	}
+	run(names: Array<string>): ITestLog {
 		for (name of names) {
-			let method = (this as any)[name];
-			// Execute the test methods - catching assertion errors
-			let passed = true;
-			let exception: Error;
-			try {
-				method();
-			} catch (err) {
-				passed = false;
-				exception = err;
-			}
-			if (passed) {
-				this.recordSuccess(name);
-			} else {
-				this.recordException(name, exception);
-			}
+			
 		}
 		return this.log;
 	}
@@ -137,20 +159,20 @@ class UnitTests {
 		}
 		return this.run(methodNames);
 	}
-	recordException(methodName: string, exception: Error | AssertionException) {
+	declareException(methodName: string, exception: Exception | AssertionException) {
 		if (AssertionException.is(exception)) {
-			return this.recordFail(name, exception);
+			return this.declareFail(name, exception);
 		} else {
-			return this.recordError(name, exception);
+			return this.declareError(name, exception);
 		}
 	}
-	recordFail(methodName: string, error: AssertionException) {
-		this.log.push(['Fail', methodName, error.name, error.message]);
+	declareFail(methodName: string, exception: AssertionException) {
+		this.log.push(['Fail', methodName, exception.name, exception.message]);
 	}
-	recordError(methodName: string, error: Error) {
+	declareError(methodName: string, error: Error) {
 		this.log.push(['Error', methodName, error.name, error.message]);
 	}
-	recordSuccess(methodName: string) {
+	declareSuccess(methodName: string) {
 		this.log.push(['Success', methodName]);
 	}
 }
