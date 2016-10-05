@@ -85,10 +85,21 @@ implied from the interfaces, and hence things you get "for free"
 to/from common data types
 ==================================== */
 
+/* Native versions
+equivalents to this categories' method,
+for built-in Javascript types
+====================================== */
+var Native = {
+	Array: function<T>(value: T): Array<T> {
+		return [value]
+	}
+};
+
 
 /* Exports
 ==================== */
 export {
 	ILiftable, Liftable,
-	lift
+	lift,
+	Native
 }
