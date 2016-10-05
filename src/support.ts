@@ -269,9 +269,7 @@ export function arrayEquals(first: Array<any>, second: Array<any>): boolean {
 			return (left === right)
 		}
 	})
-}
-
-
+};
 
 
 export function traverseArray<T, U>(
