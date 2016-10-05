@@ -17,6 +17,7 @@ import {IZeroable, Zeroable, zero} from './zeroable';
 import {IAppendable, Appendable, append} from './appendable';
 import {Foldable, fold, From as FoldableFrom} from './foldable';
 import {equal} from './equatable';
+import {LawTests, assert} from './cat_support';
 
 
 /* Interfaces
@@ -144,8 +145,75 @@ convert between morphisms (~functions) of two categories.
 /* Laws
 =================================== */
 import {LawTests, assert} from './cat_support';
+/* Native versions
+equivalents to this categories' method,
+for built-in Javascript types
+====================================== */
+let Native = {
+	Number: class NumberMonoid implements IMonoid {
+		constructor(public data: number) { }
+		append(other: NumberMonoid): NumberMonoid {
+			return new NumberMonoid(this.data + other.data)
+		}
+		zero(): NumberMonoid {
+			return new NumberMonoid(0)
+		}
+		equal(other: NumberMonoid | any) {
+			if (other instanceof NumberMonoid) {
+				return (this.data === other.data)
+			} else {
+				return false
+			}
+		}
+	},
+	Array: class ArrayMonoid<T> implements IMonoid {
+		constructor(public data: Array<T>) { }
+		append(other: ArrayMonoid<T>): ArrayMonoid<T> {
+			return new ArrayMonoid(this.data.concat(other.data))
+		}
+		zero<U>(): ArrayMonoid<U> {
+			return new ArrayMonoid([] as Array<U>)
+		}
+		equal(other: any): boolean {
+			if (other instanceof ArrayMonoid) {
+				return (this.data === other.data)
+			} else {
+				return false;
+			}
+		}
+	},
+	String: class StringMonoid implements IMonoid {
+		constructor(public data: string) { }
+		append(other: StringMonoid): StringMonoid {
+			return new StringMonoid(this.data + other.data);
+		}
+		zero(): StringMonoid {
+			return new StringMonoid("");
+		}
+		equal(other: any): boolean {
+			if (other instanceof StringMonoid) {
+				return (this.data === other.data);
+			} else {
+				return false;
+			}
+		}
+	}
+};
 
-class Laws<M extends Monoid> extends LawTests<M> {
+/* Laws
+Assertion functions expressing something which must
+be true about the category for it to be sensible, and
+are part of its definition, but are not expressible
+in the type-system.
+================================================= */
+class MonoidLaws<M extends Monoid> extends LawTests<M> {
+	/**
+	 * OVerride this for any particular monoid class.
+	 * Requires an argument 'random' which is a function generating
+	 */
+	random: (seed: number) => M;
+	seed: number;
+	klass: {new: (values: Array<any>) => M};
 
 	constructor(klass: {new: (values: Array<any>) => M}, random: (seed: number) => M, seed: number = 0) {
 		super(klass, random, seed);
@@ -166,25 +234,13 @@ class Laws<M extends Monoid> extends LawTests<M> {
 	}
 
 	test_append_identity_law(): void {
-
+		let monoid = this.random(this.seed);
+		let left = append(zero(monoid), monoid);
+		let right = append(monoid, zero(monoid));
+		assert(monoid.equal(left));
+		assert(monoid.equal(right));
+		assert(left.equal(right));
 	}
-}
-
-
-/* Laws
-Assertion functions expressing something which must
-be true about the category for it to be sensible, and
-are part of its definition, but are not expressible
-in the type-system.
-================================================= */
-function append_identity_law<U extends IMonoid>(monoid: U): boolean {
-	let left = append(zero(monoid), monoid);
-	let right = append(monoid, zero(monoid));
-	return (
-	       monoid.equal(left)
-	    && monoid.equal(right)
-	    && left.equal(right)
-	)
 }
 
 
