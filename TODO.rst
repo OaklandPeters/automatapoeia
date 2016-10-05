@@ -1,5 +1,10 @@
 Working on: reorganize manifold.ts --> manifold/ directory, as interfaces, coordinate, base
 
+Priority
+============================
+Make a copy of cats/ in it's own repo - and assign a version number.
+I think I have already created a basic repo for this somewhere.
+
 Todo:
 ============================
 * Copy out @todo comments from manifold.ts into this document
