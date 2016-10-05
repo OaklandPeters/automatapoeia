@@ -67,7 +67,7 @@ var From = {
 	Array: function<T>(array: Array<T>): Reducible<T> {
 		return {
 			fold: function<U>(f: FoldFunc<T, U>, initial: U): U {
-				array.reduce<U>(f, initial)
+				return array.reduce<U>(f, initial)
 			},
 			zero: function<U>(): Reducible<U> {
 				return From.Array<U>([] as Array<U>)

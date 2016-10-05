@@ -18,7 +18,7 @@ import {Foldable, fold} from './foldable';
 
 /* Interfaces
 ======================== */
-interface IJoinable<T> extends IReducible<T>, IAppendable<T>, ILiftable<T> {
+interface IJoinable<T> extends IReducible<T>, IAppendable, ILiftable<T> {
 	/*
 	Note: Zeroable requires an 'equal' function.
 	*/
@@ -46,7 +46,7 @@ abstract class Joinable<T> implements IJoinable<T> {
 	static is<T>(value: any): value is Reducible<T> {
 		return (
 			Reducible.is<T>(value)
-			&& Appendable.is<T>(value)
+			&& Appendable.is(value)
 			&&  (value.join instanceof Function)
 		)
 	}
@@ -58,49 +58,35 @@ abstract class Joinable<T> implements IJoinable<T> {
 /* Generic functions
 for each abstract method
 ================================================ */
-
-function _join<T, U extends IJoinable<IJoinable<T>>>(joinable: U): IJoinable<T> {
-	/*
+function join<T, U extends IJoinable<T>, V extends IJoinable<U>>(joinable: V): U {
+	/* 
+	Note: join requires a Joinable containing only other Joinables.
+	Note 2: we would like to require that the inner type matches the outer type, but
+		TypeScript has no way to articulate this. IE we would like the generic params to be:
+		join<T, U extends IJoinable>(joinable: U<U<T>>): U<T>
 	
+	This caries out what is basically a 'reduce', but the type-signature of .zero()
+	does not quite work out for that - so we use a 'fold' instead.
 	 */
-	let jj = zero<IJoinable<T>>joinable.zero();
-	jj
-	return fold<T, IJoinable<T>>(
-
-	)
-	return reduce<T, IJoinable<T>>(
+	return fold<U, U>(
 		joinable,
-		function(accumulator: IJoinable<T>, element: IJoinable<T>): IJoinable<T> {
-				return append(accumulator, element)
-		}
-	)
+		(accumulator: U, element: U) => append(accumulator, element),
+		joinable.zero<T>() as U
+	) as U;
 }
 
-function join<T, U extends IJoinable<T | IJoinable<T>>>(joinable: U): IJoinable<T> {
-	return reduce<T, IJoinable<T>>(
-		joinable,
-		function(accumulator: IJoinable<T>, element: T | IJoinable<T>): IJoinable<T> {
-			if (Joinable.is<T>(element)) {
-				return append(accumulator, element)
-			} else {
-				return append(accumulator, lift(accumulator, element))
-			}
-		}
-	)
-}
 
 /* Derivable functions
 these are the real stars of the show - the functions
 implied from the interfaces
 ========================================================== */
-function arrayJoin<T>(array: Array<T | Array<T>>): Array<T> {
-	/* Example native join operation, on built-in Javascript arrays. */
+function arrayJoin<T>(array: Array<Array<T>>): Array<T> {
 	return array.reduce<Array<T>>(
-		(acc: Array<T>, elm: Array<T> | T) =>
-			(elm instanceof Array) ? acc.concat(elm) : acc.concat([elm]),
+		(acc: Array<T>, elm: Array<T>) => acc.concat(elm),
 		[] as Array<T>
-	)
+	);
 }
+
 
 /* Metafunctions
 Functions that modify or decorate morphisms in this category

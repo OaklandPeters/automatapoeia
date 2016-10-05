@@ -1,7 +1,7 @@
-import {Iterable, forEach, fold as foldIterable, From as IterableFrom} from './iterable';
+import {Iterable, forEach, fold as foldIterable, From as IterableFrom, iter} from './iterable';
 import {isEqual} from './equatable';
 import {Iterator, range} from './iterator';
-
+import {IIndexable, items, From as IndexableFrom} from './indexable';
 
 
 /* Interfaces
@@ -60,18 +60,18 @@ var From = {
 	Array: function<T>(array: Array<T>): Foldable<T> {
 		return {
 			fold: function<U>(f: FoldFunc<T, U>, initial: U): U {
-				array.reduce<U>(f, initial)
+				return array.reduce<U>(f, initial)
 			}
 		}
 	},
 	Iterable: function<T>(iterable: Iterable<T>): Foldable<T> {
 		return {
 			fold: function<U>(f: FoldFunc<T, U>, initial: U): U {
-				return foldIterable<T, U>(iterable, initial, f);
+				return foldIterable<T, U>(iterable, f, initial);
 			}
 		}
 	}
-}
+};
 
 var To = {
 	Array: function foldable_to_array<T>(foldable: Foldable<T>): Array<T> {
@@ -136,14 +136,13 @@ for built-in Javascript types
 let Native = {
 	Array: function<T, U>(array: Array<T>, f: FoldFunc<T, U>, initial: U): U {
 		return array.reduce<U>(f, initial)
+	},
+	String: function<U>(_string: string, f: FoldFunc<string, U>, initial: U): U {
+		/* Fold one character at a time from '_string', retreiving via numeric indices */
+		let iterator = iter(new IndexableFrom.String(_string));
+		return foldIterable<string, U>(iterator, f, initial);
 	}
 }
-
-
-// function fold<T, U>(iterable: Iterable<T>,
-// 	folder: (accumulator: U, element: T) => U,
-// 	initial: U
-// 	): U {
 
 function foldRange<U>(count: number, action: (accumulator: U, i: number) => U, initial: U): U {
 	/*
