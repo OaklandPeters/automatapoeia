@@ -54,11 +54,21 @@ function isType<T extends TypeCheckable>(
 	return typecheckable.is(value)
 }
 
-function isTypeContaining<T extends TypeCheckable, U extends Foldable<T> & TypeCheckable>(
+function isTypeFoldableContaining<T extends TypeCheckable, U extends Foldable<T> & TypeCheckable>(
 	value: any,
 	OuterType: {is: (value: any) => boolean, new: (values: any) => U},
 	InnerType: {is: (value: any) => boolean, new: (values: any) => T}
 	): value is U {
+	/**
+	 * Check the outer type and inner (contained) types of a generic object.
+	 * This is a very valuable function - but it is one of the only ways to
+	 * determine anything about the inner-types of a structure.
+	 *
+	 * TECHNICALLY - this can be executed on any foldable data-structure, but it
+	 * is probably only meaningful on Liftable/generic data containers.
+	 * These will often be monads - and other variants of this function can
+	 * be expressed for those (generally based on 'map' rather than 'fold').
+	 */
 	if (OuterType.is(value)) {
 		if (all(value, (inner) => InnerType.is(inner))) {
 			return true;

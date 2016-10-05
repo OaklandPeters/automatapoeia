@@ -13,6 +13,8 @@ interface IFoldable<T> {
 	fold<U>(f: (accumulator: U, element: T) => U, initial: U): U;
 }
 
+
+
 /* Abstract Base Classes
 with 'is' type-checking static method
 ========================================= */
@@ -20,6 +22,32 @@ abstract class Foldable<T> implements IFoldable<T> {
 	abstract fold<U>(f: (accumulator: U, element: T) => U, initial: U): U;
 	static is<T>(value: any): value is Foldable<T> {
 		return (value.fold instanceof Function)
+	}
+}
+
+
+/* Type-Guards: Type-checking functions
+================================================= */
+function isFoldableOf<T>(
+	value: any,
+	innerClass: {is: (value: any) => value is T}): value is IFoldable<T> {
+	/**
+	 * This is a very valuable function - because it allows us to know something about
+	 * the inner-types contained inside it.
+	 *
+	 * TECHNICALLY - this can be executed on any foldable data-structure, but it
+	 * is probably only meaningful on Liftable/generic data containers.
+	 * These will often be monads.
+	 *
+	 * NOTE - the canonical very of this function is in typecheckable:
+	 * 'isTypeFoldableContaining'. However this function ('isFoldableOf') is left
+	 * inside 'foldable.ts' to demonstrate the role that Foldable plays in navigating
+	 * the internals of container-types.
+	 */
+	if (Foldable.is<any>(value)){
+		return all(value, innerClass.is);
+	} else {
+		return false;
 	}
 }
 
