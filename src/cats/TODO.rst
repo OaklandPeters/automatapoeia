@@ -20,6 +20,10 @@ Basically always, we will want 'Morphism in category X', but I realize it isn't 
 Identifiable
 --------------
 
+Composable
+-------------
+* This might be called 'Apply' in the Haskell community
+
 Category
 -------------------
 * Category = Identifiable + Composable
@@ -28,6 +32,17 @@ Category
 * This may or may not need a notion of domain to be comprehensible
 * 'constant': Derived function: constant(a) -> f(x)=a for all x in domain
 ** function constant<A extends Domain, X extends Domain>(a: A): (x: X)=>A { return function _constant(x){ return a; }}
+
+Add some notes somewhere on this equivalence
+------------------------------------------------
+Data-structures              Functions
+   zeroable                     identifiable 
+   liftable                     morphism
+   appendable                   composoable
+   monoid                       category
+   foldable                     callable
+   monad                        ??? (arrow maybe)
+ 
 
 Applicative
 -------------
