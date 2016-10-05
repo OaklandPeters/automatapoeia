@@ -60,11 +60,6 @@ these are the real stars of the show - the functions
 implied from the interfaces
 ========================================================== */
 function combine<U extends IMonoid>(base: U, ...rest: Array<U>): U {
-	return foldArray<T>(
-		rest,
-		(accumulator: U, element: U) => append(accumulator, element),
-		base
-	)
 	return fold<U, U>(
 		FoldableFrom.Array(rest),
 		(accumulator: U, element: U) => append(accumulator, element),
@@ -92,47 +87,19 @@ function repeat<U extends IMonoid>(monoid: U, count: number): U {
 Functions that modify or decorate morphisms in this category
 ============================================================== */
 
+
 /* Constructors
 convert between elements (~instances) of two categories
 ==================================== */
-class NumberMonoid implements IMonoid {
-	constructor(public data: number) { }
-	append(other: NumberMonoid): NumberMonoid {
-		return new NumberMonoid(this.data + other.data)
-	}
-	zero(): NumberMonoid {
-		return new NumberMonoid(0)
-	}
-	equal(other: NumberMonoid | any) {
-		if (other instanceof NumberMonoid) {
-			return (this.data === other.data)
-		} else {
-			return false
-		}
-	}
-}
-
-class ArrayMonoid<T> implements IMonoid {
-	constructor(public data: Array<T>) { }
-	append(other: ArrayMonoid<T>): ArrayMonoid<T> {
-		return new ArrayMonoid(this.data.concat(other.data))
-	}
-	zero<U>(): ArrayMonoid<U> {
-		return new ArrayMonoid([] as Array<U>)
-	}
-	equal(other: ArrayMonoid<T>): boolean {
-		if (other instanceof ArrayMonoid) {
-			return (this.data === other.data)
-		}
-	}
-}
-
 var From = {
 	Number: function monoidFromNumber(num: number): Monoid {
-		return new NumberMonoid(num)
+		return new Native.Number(num);
 	},
 	Array: function monoidFromArray<T>(array: Array<T>): Monoid {
-		return new ArrayMonoid(array)
+		return new Native.Array(array);
+	},
+	String: function monoidFromString<T>(_string: string): Monoid {
+		return new Native.String(_string);
 	}
 };
 
@@ -142,9 +109,6 @@ convert between morphisms (~functions) of two categories.
 ==================================== */
 
 
-/* Laws
-=================================== */
-import {LawTests, assert} from './cat_support';
 /* Native versions
 equivalents to this categories' method,
 for built-in Javascript types
@@ -247,5 +211,8 @@ class MonoidLaws<M extends Monoid> extends LawTests<M> {
 /* Exports
 ==================== */
 export {
-
+	IMonoid, Monoid,
+	combine, repeat,
+	From, Native,
+	MonoidLaws
 }
