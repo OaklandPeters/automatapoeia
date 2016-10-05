@@ -196,28 +196,8 @@ export function product<T>(...pools: Array<Array<T>>): Array<Array<T>> {
 
 
 /**
- * Quality-of-life functions
+ * String Manipulation Functions
  */
-declare var hasOwnProperty: (obj: any, key: string|number) => boolean;
-export function has(obj: any, key: string | number) {
-    return obj != null && hasOwnProperty.call(obj, key);
-};
-
-export function assert(value: Boolean, message: string = "Invalid assertion.") {
-	if (!value) {
-		throw Error(message)
-	}
-};
-
-export function assertType<T>(value: any, checker: (x: any) => boolean): value is T {
-	return checker(value)
-}
-
-export function construct<T extends Function>(self: T, args: Array<any>): T {
-	/* Call constructor from inside class methods. Basic reflection. */
-	return self.apply(self, args);
-};
-
 export function format(template: string, matches: string[], keywords: {[key: string]: string} = {}): string {
 	function replacer(match: string, content: string|number) {	//Replace with return value
 		/**
@@ -241,6 +221,41 @@ export function format(template: string, matches: string[], keywords: {[key: str
 		}
 	}
 	return template.replace(/{(.*?)}/g, replacer);
+};
+
+export function objectString(obj: any, keys: Array<string>): string {
+	/* 
+	@todo: Move this into support.ts
+	*/
+	let fieldsToDisplay = keys
+		.filter((key: string) => ((obj as any)[key] !== undefined))
+		.map((key) => (key + ": '" + String((obj as any)[key]) + "'"))
+		.join(", ");
+	return "{" + fieldsToDisplay + "}";
+};
+
+
+/**
+ * Quality-of-life functions
+ */
+declare var hasOwnProperty: (obj: any, key: string|number) => boolean;
+export function has(obj: any, key: string | number) {
+    return obj != null && hasOwnProperty.call(obj, key);
+};
+
+export function assert(value: Boolean, message: string = "Invalid assertion.") {
+	if (!value) {
+		throw Error(message)
+	}
+};
+
+export function assertType<T>(value: any, checker: (x: any) => boolean): value is T {
+	return checker(value)
+}
+
+export function construct<T extends Function>(self: T, args: Array<any>): T {
+	/* Call constructor from inside class methods. Basic reflection. */
+	return self.apply(self, args);
 };
 
 
