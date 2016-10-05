@@ -10,7 +10,7 @@
  * iter(): IterationResult<T>, while enum(): IterationResult<[KeyType, T]>
  */
 import {IIterable, Iterable, forEach, filter, apply as applyToIterable} from './iterable';
-import {IIterator, Iterator, From as IteratorFrom} from './iterator';
+import {IIterator, Iterator, From as IteratorFrom, range} from './iterator';
 import {IterationResult, isNotDone, apply as applyIfNotDone} from './iteration_result';
 import {IRecord, Record} from './record';
 import {isEqual} from './equatable';
@@ -56,6 +56,9 @@ abstract class Indexable<C, T> extends Iterable<T> implements IIndexable<C, T> {
 
 /* Typechecking functions
 ================================================= */
+function stringIsIndexable(_string: string): _string is string & IIndexable<number, string> {
+	return true;
+}
 
 
 /* Generic functions
@@ -128,6 +131,11 @@ var From = {
 			return IteratorFrom.Array<string>(Object.keys(this.data))
 		}
 		getitem(i: string): any { return this.data[i]}
+	},
+	String: class IndexableFromString extends Indexable<number, string> {
+		constructor(public data: string) { super() }
+		keys(): Iterator<number> { return range(this.data.length); }
+		getitem(i: number): string { return this.data[i]; }
 	}
 }
 
@@ -139,5 +147,6 @@ var From = {
 ==================== */
 export {
 	IIndexable, Indexable,
-	items, keys
+	items, keys,
+	To, From
 }
