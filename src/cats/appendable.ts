@@ -40,7 +40,6 @@ type Appender<T, V extends Appendable> = {
 } & V;
 
 
-
 /* Generic functions
 for each abstract method
 ================================================ */
@@ -64,7 +63,6 @@ function append<T, U extends Appendable>(appendable: U, other: U): U {
 these are the real stars of the show - the functions
 implied from the interfaces
 ========================================================== */
-
 
 
 /* Metafunctions
@@ -104,9 +102,7 @@ var Native = {
 		}
 		return merged as T & U;
 	}
-}
-
-
+};
 
 
 /* Exports
