@@ -6,9 +6,6 @@ Should advanced me toward the mid-term goal of manifold.
 Function-Based Types
 ==========================
 
-Callable
---------------
-
 
 Morphism
 ---------------
@@ -16,13 +13,18 @@ Fancy function. Can be invoked as a JS function, but also has attributes and met
 Morphism = Callable & Function
 Basically always, we will want 'Morphism in category X', but I realize it isn't actually logically required.
 
+Callable
+--------------
+* Probably equivalent to 'fold'
+* This might be called 'Apply' in the Haskell community
 
 Identifiable
 --------------
+* Revisit this. The current one was written a long time ago.
 
 Composable
 -------------
-* This might be called 'Apply' in the Haskell community
+* Revisit this. Current stub is old.
 
 Category
 -------------------
@@ -32,6 +34,7 @@ Category
 * This may or may not need a notion of domain to be comprehensible
 * 'constant': Derived function: constant(a) -> f(x)=a for all x in domain
 ** function constant<A extends Domain, X extends Domain>(a: A): (x: X)=>A { return function _constant(x){ return a; }}
+* Explain that this is basically 'Monoid' for functions
 
 Add some notes somewhere on this equivalence
 ------------------------------------------------
@@ -42,12 +45,8 @@ Data-structures              Functions
    monoid                       category
    foldable                     callable
    monad                        ??? (arrow maybe)
- 
-
-Applicative
--------------
-* I haven't thought about this yet
-
+* Add a file: 'data_and_function_equivalent_categories.ts' to explain this
+* Add a short note inside each of the function categories that it plays a similar role to the data-structure one.
 
 Functor Stack of Categories
 ==============================
@@ -63,19 +62,27 @@ Mappable
 
 Functor
 ------------------
-Mappable plus a few more properties.
+* I need read category-theory literature and Haskell literature.
 * Functor = Mappable + Category + laws
+* ... a highly slimmed-down Monad
+* Also suspect that it lacks 'Callable' - which Applicative DOES have
 * Functor laws here: https://hackage.haskell.org/package/base-4.9.0.0/docs/Data-Functor.html
-* Explain that this is basically 'Monoid' for functions
 * Functor laws:
 ** fmap id  ==  id
 ** fmap (f . g)  ==  fmap f . fmap g
 
 Applicative
 --------------------
-Not sure if I'm going to build this or not.
-BUT - since I'm building Functor and Monad, I should consider it.
-AFTER - writing Functor, then read up on applicative.
+* I haven't thought about this yet
+* ? What is Haskell's definition of this? It will be nontrivial to dis-entangle Haskell's lazy evaluation from the algebra defining 'amap'
+* The name 'Applicative' is terrible, and I should really rename it.
+* The distinction between this and Monad *probably* deals with the fact that 'fold' and 'map' are not equivalent. I think: (Zero + Append + Fold) => Map. The hard part is thinking of examples which are one of these things and not the other. I think:
+** 'Append' is an Anamorphism ('builds up' a structure)
+** 'Fold' is a Catamorphism ('tears down' a structure)
+** 'Map' is structure preserving (doesn't change the structure at all)
+** Combining the Ana of Append and Cata of Fold is sufficent to build the Map
+** 'Map' doesn't imply either Append or Fold
+*** Example of something which is Mappable but not Foldable is network-parallelism, without a central combiner. Basically the 'map' without a 'reduce'.
 Applicative = Functor + Appliable
 * Note - I think I once figured out that 'Applicative' is basically a functor category.
 * Description of Applicative from Wiki: https://en.wikipedia.org/wiki/Applicative_functor
@@ -112,6 +119,13 @@ after finishing functor - becuase it's a refined version of Mappable
 ** filter
 ** zip/zipWith
 ** MAYBE: when/guard/unless as well - if I can grok them properly
+* The distinction between this and Monad *probably* deals with the fact that 'fold' and 'map' are not equivalent. I think: (Zero + Append + Fold) => Map. The hard part is thinking of examples which are one of these things and not the other. I think:
+** 'Append' is an Anamorphism ('builds up' a structure)
+** 'Fold' is a Catamorphism ('tears down' a structure)
+** 'Map' is structure preserving (doesn't change the structure at all)
+** Combining the Ana of Append and Cata of Fold is sufficent to build the Map
+** 'Map' doesn't imply either Append or Fold
+*** Example of something which is Mappable but not Foldable is network-parallelism, without a central combiner. Basically the 'map' without a 'reduce'.
 
 
 Mid-term Target Goals
