@@ -2,6 +2,26 @@ Automatapoeia
 ======================
 Javascript cellular automata.
 
+
+Installation
+--------------
+[@todo: Needs to walk through installing everything, with especial care for the TS/tsd parts.
+This needs to include installing npm, gulp, ts, tsd. Lookup my paper notes at home, and copy here]
+
+
+Shell Commands
+----------------
+To run full build process, which includes running the TypeScript compiler:
+```shell
+gulp
+```
+
+Run Typescript compiler:
+```shell
+cd automatapoeia
+tsc
+```
+
 Contributors
 ------------
 Oakland John Peters (oakland.peters@gmail.com).
