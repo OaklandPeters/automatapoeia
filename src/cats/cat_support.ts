@@ -102,9 +102,13 @@ interface ITestMethodSummary {
 
 interface ITestLog extends Array<ITestMethodSummary> {}
 
+type TMSValue = string | boolean;
+class TestMethodSummary implements ITestMethodSummary {
+	/*
+	var obj = {name: "test_stuff", passed: false, kind: "fail", message: "Totally didn't work"};
+	format("TestMethodSummary\{{name}\}", obj)
 
-
-class TestMethodSummary {
+	 */
 	constructor(
 		public name: string,
 		public passed: boolean,
@@ -112,7 +116,31 @@ class TestMethodSummary {
 		public message?: string,
 		public stack?: string
 	) {}
-	// toString(): string {}
+	items(): Array<[string, TMSValue]> {
+		/* Return array of key/value pairs, including only those with a defined value */
+		let _keys = ['name', 'passed', 'kind', 'message', 'stack'];
+		let obj = this as {[key: string]: any}; // {[key: string]: string}
+		let items = _keys
+			.filter((key: string) => (obj[key] !== undefined))
+			.map((key) => [key, (obj)[key]] as [string, TMSValue]);
+		return items;
+	}
+	toString(): string {
+		/*
+		@todo: Consider using support.ts: format in this, or maybe making a conditionalFormat - which doesn't inject undefined
+
+		var obj = {name: "test_stuff", passed: false, kind: "fail", message: "Totally didn't work"};
+		 */
+		let itemsString = this.items()
+			.map((key, value) => (key + ": '" + String(value) + "'"))
+			.join(", ");
+		return "TestMethodSummary{" + itemsString + "}";
+	}
+	toArray(): Array<TMSValue> {
+		return this
+			.items()
+			.map(([key, value]) => value);
+	}
 }
 
 
@@ -122,6 +150,7 @@ class UnitTests {
 
 	@todo: refactor this into UnitTest, and LawTests which extends it
 	@todo: Give a better type to the TestLog
+	@todo: Cover serialization of the log
 	*/
 	log: ITestLog;
 	constructor() {
@@ -130,19 +159,12 @@ class UnitTests {
 	runMethod(name: string): ITestMethodSummary {
 		let method = (this as any)[name];
 		// Execute the test methods - catching assertion errors
-		let passed = true;
-		let exception: Error;
 		try {
 			method();
 		} catch (err) {
-			passed = false;
-			exception = err;
+			return this.declareException(name, err as Exception);
 		}
-		if (passed) {
-			return this.declareSuccess(name);
-		} else {
-			return this.declareException(name, exception);
-		}
+		return this.declareSuccess(name);
 	}
 	run(names: Array<string>): ITestLog {
 		for (name of names) {
@@ -159,24 +181,33 @@ class UnitTests {
 		}
 		return this.run(methodNames);
 	}
-	declareException(methodName: string, exception: Exception | AssertionException) {
+	declareException(methodName: string, exception: Exception | AssertionException): ITestMethodSummary {
 		if (AssertionException.is(exception)) {
 			return this.declareFail(name, exception);
 		} else {
 			return this.declareError(name, exception);
 		}
 	}
-	declareFail(methodName: string, exception: AssertionException) {
-		this.log.push(['Fail', methodName, exception.name, exception.message]);
+	declareFail(methodName: string, exception: AssertionException): ITestMethodSummary {
+		let summary = new TestMethodSummary(methodName, false, "fail", exception.message, exception.stack);
+		this.log.push(summary)
+		return summary;
 	}
-	declareError(methodName: string, error: Error) {
-		this.log.push(['Error', methodName, error.name, error.message]);
+	declareError(methodName: string, error: Error): ITestMethodSummary {
+		let summary = new TestMethodSummary(methodName, false, "error", error.message, error.stack);
+		this.log.push(summary);
+		return summary
 	}
-	declareSuccess(methodName: string) {
-		this.log.push(['Success', methodName]);
+	declareSuccess(methodName: string): ITestMethodSummary {
+		let summary = new TestMethodSummary(methodName, true, 'pass');
+		this.log.push(summary);
+		return summary
 	}
 }
 
+// -------------------------------
+// Unfinished
+// -------------------------------
 class LawTests<Klass> extends UnitTests {
 	constructor(
 		public klass: {new: (values: Array<any>) => Klass},
@@ -192,5 +223,6 @@ export {
 	NativeMisc, NativeIndexedCollections, NativeKeyedCollections,
 	Class,
 	assertType, assert, Exception, AssertionException,
-	TestLog, UnitTests, LawTests
+	TestResultKind, ITestMethodSummary, ITestLog, TestMethodSummary,
+	UnitTests, LawTests
 }
