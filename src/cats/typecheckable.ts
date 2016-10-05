@@ -7,7 +7,10 @@
  * 		if(NumberType.is(x)) {
  * 			// TS will let you use x like a 'Number' here
  * 		}
+ *
+ * NOTE - one very important type-checking
  */
+import {Foldable, all} from './foldable';
 
 
 /* Interfaces
@@ -41,15 +44,27 @@ function isTypeCheckable(value: any): value is TypeCheckable {
 }
 
 
-
 /* Generic functions   (for each abstract method)
 ================================================== */
 function isType<T extends TypeCheckable>(
 	value: any,
-	typecheckable: {is: (value: any) => boolean}
+	typecheckable: {is: (value: any) => boolean} & T
 	): value is T {
-	/* This would be called 'is', but that's a reserved word in TypeScript */
+	/* This function be called 'is', but 'is' is a reserved word in TypeScript */
 	return typecheckable.is(value)
+}
+
+function isTypeContaining<T extends TypeCheckable, U extends Foldable<T> & TypeCheckable>(
+	value: any,
+	OuterType: {is: (value: any) => boolean, new: (values: any) => U},
+	InnerType: {is: (value: any) => boolean, new: (values: any) => T}
+	): value is U {
+	if (OuterType.is(value)) {
+		if (all(value, (inner) => InnerType.is(inner))) {
+			return true;
+		}
+	}
+	return false;
 }
 
 
