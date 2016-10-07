@@ -3,9 +3,9 @@ Short-term Goals
 Should advanced me toward the mid-term goal of manifold.
 
 
+
 Function-Based Types
 ==========================
-
 
 Morphism
 ---------------
@@ -15,8 +15,8 @@ Basically always, we will want 'Morphism in category X', but I realize it isn't 
 
 Callable
 --------------
-* Probably equivalent to 'fold'
-* This might be called 'Apply' in the Haskell community
+* Update this to bear the same signature as JS-builtin call: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call
+** This is 'call(this, arg1, arg2, ...)'
 
 Identifiable
 --------------
