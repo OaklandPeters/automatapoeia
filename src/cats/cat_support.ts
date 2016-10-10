@@ -45,6 +45,17 @@ type NativeKeyedCollections = (
 // Class<T> is used to refer to construction functions for a given class
 type Class<T> = {new(...values: Array<any>): T};
 
+
+/* TypeScript related utility functions
+=============================== */
+function updateObject<T, U>(first: T, second: U): T & U {
+	Object.keys(second).forEach(function(key){
+		(first as any)[key] = (second as any)[key];
+	});
+	return first as T & U;
+}
+
+
 /* Assertions
 ===================================== */
 class Exception implements Error {
@@ -222,6 +233,7 @@ export {
 	Native, Primitive, NativeClasses,
 	NativeMisc, NativeIndexedCollections, NativeKeyedCollections,
 	Class,
+	updateObject,
 	assertType, assert, Exception, AssertionException,
 	TestResultKind, ITestMethodSummary, ITestLog, TestMethodSummary,
 	UnitTests, LawTests

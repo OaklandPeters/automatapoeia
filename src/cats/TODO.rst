@@ -12,29 +12,36 @@ Morphism
 Fancy function. Can be invoked as a JS function, but also has attributes and methods.
 Morphism = Callable & Function
 Basically always, we will want 'Morphism in category X', but I realize it isn't actually logically required.
+* See if I can define a Morphism class which returns the results from createMorphism()
+** I think I can make constructor functions in JS return arbitary stuff
 
 Callable
 --------------
-* Update this to bear the same signature as JS-builtin call: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call
-** This is 'call(this, arg1, arg2, ...)'
+* Update name: invoke & invokable
+* add note: basically 'Callable'/'Apply' - but need to distinguish from JS functions builtin call/apply
 
 Identifiable
 --------------
 * Revisit this. The current one was written a long time ago.
+* Add this to 'all_cats.ts'
 
 Composable
 -------------
 * Revisit this. Current stub is old.
+* Add this to 'all_cats.ts'
 
 Category
 -------------------
-* Category = Identifiable + Composable
-* Add note - category doesn't actually say anything about the ability to apply those functions
+* Category = Identifiable + Composable + some laws + domain (usually implicit)
+* Add note - category doesn't actually say anything about the ability to apply functions inside the category
+* Add Note: Category is the formal definition of the groups (ex Foldable) that we've been working from. Well, we can finally define it formally now.
+** Take some time after adding this note - to note how it is that some of the categories fullfill the category-requirements. (IE they fullfill it from the Javascript native)
 * Nor does it say anything about making VALUES equatable
 * This may or may not need a notion of domain to be comprehensible
 * 'constant': Derived function: constant(a) -> f(x)=a for all x in domain
 ** function constant<A extends Domain, X extends Domain>(a: A): (x: X)=>A { return function _constant(x){ return a; }}
 * Explain that this is basically 'Monoid' for functions
+* Add this to 'all_cats.ts'
 
 Add some notes somewhere on this equivalence
 ------------------------------------------------

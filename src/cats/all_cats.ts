@@ -10,12 +10,16 @@ import * as typecheckable from './typecheckable';
 import * as foldable from './foldable';
 import * as reducible from './reducible';
 import * as joinable from './joinable';
+import * as monoid from './monoid';
 import * as iterable from './iterable';
 import * as iterator from './iterator';
 import * as iteration_result from './iteration_result';
+import * as invokable from './invokable';
+import * as morphism from './morphism';
+import * as mappable from './mappable';
 
 
-// import * as mappable from './mappable';
+
 // import * as sequence from './sequence';
 // import * as vector form './vector';
 // import * as groups from './groups';
