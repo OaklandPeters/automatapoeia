@@ -7,6 +7,7 @@ Should advanced me toward the mid-term goal of manifold.
 Function-Based Types
 ==========================
 
+
 Morphism
 ---------------
 Fancy function. Can be invoked as a JS function, but also has attributes and methods.
@@ -14,11 +15,7 @@ Morphism = Callable & Function
 Basically always, we will want 'Morphism in category X', but I realize it isn't actually logically required.
 * See if I can define a Morphism class which returns the results from createMorphism()
 ** I think I can make constructor functions in JS return arbitary stuff
-
-Callable
---------------
-* Update name: invoke & invokable
-* add note: basically 'Callable'/'Apply' - but need to distinguish from JS functions builtin call/apply
+* I need to define the methods that are needed for a Morphism. Call, Compose, etc
 
 Identifiable
 --------------
@@ -42,6 +39,7 @@ Category
 ** function constant<A extends Domain, X extends Domain>(a: A): (x: X)=>A { return function _constant(x){ return a; }}
 * Explain that this is basically 'Monoid' for functions
 * Add this to 'all_cats.ts'
+* Add note referring to the pedadgogy 'every_cat_is_many_cats.rst'
 
 Add some notes somewhere on this equivalence
 ------------------------------------------------

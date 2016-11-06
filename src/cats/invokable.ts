@@ -43,6 +43,9 @@ function invoke<Input, Output>(invokable: IInvokable<Input, Output>, input: Inpu
 convert between elements (~instances) of two categories
 ==================================== */
 class InvokableFunction<Input, Output> extends Invokable<Input, Output> {
+	/**
+	 * A basic function, wrapped up in category-theory terms.
+	 */
 	constructor(
 		public func: (input: Input) => Output
 	) {
