@@ -25,48 +25,101 @@
  */
 import {IInvokable, Invokable, InvokableFunction} from './invokable';
 import {updateObject} from './cat_support';
-
-
-
-
-
-
-
+import {AnyType} from './typecheckable';
 
 
 
 
 /* Interfaces
 ======================== */
+
 // IMorphism: 'T' is related to the Domain or Category of the Morphism.
 // It acts much like the class - in defining attributes and methods for a Morphism
-type IMorphism<Input, Output, T> = ((input: Input) => Output) & IInvokable<Input, Output> & T;
+/**
+ * IMorphism has three parameters:
+ *  
+ * 
+ */
+type IMorphism<T, Input, Output> = ((input: Input) => Output) & IInvokable<Input, Output> & T;
 
 
 /* Abstract Base Classes
 with 'is' type-checking static method
 ========================================= */
+abstract class AdvancedMorphism<A, B> implements IInvokable<A, B> {
+	abstract invoke(input: A): B;
+	static create<A, B, T extends IInvokable<A, B>>(invokable: T): IMorphism<A, B, T> {
+		function f(arg: A): B {
+			return this.invoke(arg);
+		}
+		let bound = f.bind(invokable);
+		bound.__proto__ = (invokable as any).__proto__;
+		return updateObject<Function, T>(bound, invokable) as IMorphism<A, B, T>;
+	}
+	static is<Input, Output, T>(
+		value: any, category: {is: (value: any)=>boolean, new: (values: any[]) => T} = AnyType as any
+		): value is IMorphism<Input, Output, T> {
+		/**
+		 * Since we cannot define an abstract base class for Morphism, this function
+		 * plays the role of Morphism.is
+		 */
+		return (
+			value instanceof Function
+			&& Invokable.is(value)
+			&& category.is(value)
+		);		
+	}
+}
+
+function isMorphism<Input, Output, T>(
+	value: any, category: {is: (value: any)=>boolean, new: (values: any[]) => T} = AnyType as any
+	): value is IMorphism<Input, Output, T> {
+	/**
+	 * Since we cannot define an abstract base class for Morphism, this function
+	 * plays the role of Morphism.is
+	 */
+	return (
+		value instanceof Function
+		&& Invokable.is(value)
+		&& category.is(value)
+	);		
+}
+
+
+
+
 // We cannot define a normal Morphism class or abstract class, and have
 // it act as a normal function.
 // BUT - we can define a factory function which will define something that
 // behaves the same way
-function createMorphism<A, B, T extends IInvokable<A, B>>(invokable: T): IMorphism<A, B, T> {
-    /**
-     * We have two related objects.
-     * invokable - an object in JS terms.
-     *     This cannot be directly called via normal Javascript, although its methods can
-     * morphism - constructed by this function.
-     * 	   Usable as a normal Javascript function, but also has access to all attributes
-     * 	   and methods of the 'invokable' object.
-     */
-	function f(arg: A): B {
-		return this.invoke(arg);
+let Morphism = {
+	create: function createMorphism<A, B, T extends IInvokable<A, B>>(invokable: T): IMorphism<A, B, T> {
+		/**
+	     * We have two related objects.
+	     * invokable - an object in JS terms.
+	     *     This cannot be directly called via normal Javascript, although its methods can
+	     * morphism - constructed by this function.
+	     * 	   Usable as a normal Javascript function, but also has access to all attributes
+	     * 	   and methods of the 'invokable' object.
+	     *
+	     * This plays the role of a constructor for Morphism classes.
+	     */
+		function f(arg: A): B {
+			return this.invoke(arg);
+		}
+		let bound = f.bind(invokable);
+		bound.__proto__ = (invokable as any).__proto__;
+		return updateObject<Function, T>(bound, invokable) as IMorphism<A, B, T>;
+	},
+	is: function isMorphism<Input, Output, T>(value: any): this is IMorphism<Input, Output, T> {
+		/**
+		 * Since we cannot define an abstract base class for Morphism, this function
+		 * plays the role of Morphism.is
+		 */
+		
 	}
-	let bound = f.bind(invokable);
-	bound.__proto__ = (invokable as any).__proto__;
-	return updateObject<Function, T>(bound, invokable) as IMorphism<A, B, T>;
-	
-}
+};
+
 
 
 /* Generic functions
