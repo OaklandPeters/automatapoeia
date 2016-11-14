@@ -170,35 +170,44 @@ be true about the category for it to be sensible, and
 are part of its definition, but are not expressible
 in the type-system.
 ================================================= */
-class MonoidLaws<M extends Monoid> extends LawTests<M> {
+class MonoidLaws<M extends Monoid, N> extends LawTests<M> {
 	/**
 	 * OVerride this for any particular monoid class.
 	 * Requires an argument 'random' which is a function generating
+	 *
+	 * @todo: Make 'N' a MonoidMorphism
 	 */
-	random: (seed: number) => M;
+	// random: (seed: number) => M;
+	// seed: number;
+	// klass: {new: (values: Array<any>) => M};
+	objectKlass: {new: (values: Array<any>) => M};
+	objectRandom: (seed: number) => M;	
+	morphismKlass: {new: (values: Array<any>) => N};
+	morphismRandom: (seed: number) => N;
 	seed: number;
-	klass: {new: (values: Array<any>) => M};
 
-	constructor(klass: {new: (values: Array<any>) => M}, random: (seed: number) => M, seed: number = 0) {
-		super(klass, random, seed);
+	constructor(objectKlass: {new: (values: Array<any>) => M},
+		        objectRandom: (seed: number) => M,
+				seed: number = 0) {
+		super(objectKlass, objectRandom, seed);
 	}
 
 	test_leftAppendEquality(): void {
 		// x + 0 === x
-		let x = this.random(this.seed);
+		let x = this.objectRandom(this.seed);
 		assert(equal(append(x, zero(x)), x),
 			"Failed left append equality: 'x + 0 === x', for seed = {this.seed}");
 	}
 
 	test_rightAppendEquality(): void {
 		// 0 + x === x
-		let x = this.random(this.seed);
+		let x = this.objectRandom(this.seed);
 		assert(equal(append(zero(x), x), x),
 			"Failed right append equality: '0 + x === x', for seed = {this.seed}");
 	}
 
 	test_append_identity_law(): void {
-		let monoid = this.random(this.seed);
+		let monoid = this.objectRandom(this.seed);
 		let left = append(zero(monoid), monoid);
 		let right = append(monoid, zero(monoid));
 		assert(monoid.equal(left));

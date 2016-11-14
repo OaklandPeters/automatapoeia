@@ -22,6 +22,12 @@ cd automatapoeia
 tsc
 ```
 
+Run unit-tests in `test/`:
+```shell
+npm test
+```
+
+
 Contributors
 ------------
 Oakland John Peters (oakland.peters@gmail.com).

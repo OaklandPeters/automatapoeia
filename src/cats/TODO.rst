@@ -4,6 +4,10 @@ Should advanced me toward the mid-term goal of manifold.
 
 
 
+Back-fill
+-------------
+Add Laws class to zeroable
+
 Function-Based Types
 ==========================
 
@@ -75,6 +79,20 @@ Functor
 * Functor laws:
 ** fmap id  ==  id
 ** fmap (f . g)  ==  fmap f . fmap g
+
+
+
+Mid-term Target Goals
+=============================================
+
+Unit-tests
+--------------------
+* Find, install, learn a Javascript NPM unit-test package
+* Get test-runner to run the law-tests I've already learned
+* Do NOT get distracted by writing or running unittests for anything else. Especially all of the categories without law-tests
+* Unit-test library: unit.js: http://unitjs.com/guide/introduction.html
+* Test runner: Mocha: 
+
 
 Applicative
 --------------------

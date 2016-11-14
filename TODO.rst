@@ -5,6 +5,13 @@ Priority
 Make a copy of cats/ in it's own repo - and assign a version number.
 I think I have already created a basic repo for this somewhere.
 
+
+Unit-tests
+--------------------
+* Find, install, learn a Javascript NPM unit-test package
+* Get test-runner to run the law-tests I've already learned
+* Do NOT get distracted by writing or running unittests for anything else. Especially all of the categories without law-tests
+
 Todo:
 ============================
 * Copy out @todo comments from manifold.ts into this document

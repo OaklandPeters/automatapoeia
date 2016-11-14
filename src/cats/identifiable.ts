@@ -48,6 +48,25 @@ be true about the category for it to be sensible, and
 are part of its definition, but are not expressible
 in the type-system.
 ================================================= */
+class IdentityLaws<M extends IEquatable, N extends IIdentifiable> extends LawTests<M> {
+	objectKlass: {new: (values: Array<any>) => M};
+	objectRandom: (seed: number) => M;	
+	morphismKlass: {new: (values: Array<any>) => N} & IIdentifiable;
+	morphismRandom: (seed: number) => N;
+	seed: number;
+
+	constructor(objectKlass: {new: (values: Array<any>) => M},
+		        objectRandom: (seed: number) => M,
+				seed: number = 0) {
+		super(objectKlass, objectRandom, seed);
+	}
+
+	test_identity_application() {
+		let x = this.objectRandom(this.seed);
+		assert(equal(x, this.morphismKlass.identity(x)));
+	}
+
+}
 
 /* Derivable functions
 these are the real stars of the show - the functions
