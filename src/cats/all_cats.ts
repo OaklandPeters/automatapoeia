@@ -11,6 +11,7 @@ import * as foldable from './foldable';
 import * as reducible from './reducible';
 import * as joinable from './joinable';
 import * as monoid from './monoid';
+import * as identifiable from './identifiable';
 import * as iterable from './iterable';
 import * as iterator from './iterator';
 import * as iteration_result from './iteration_result';
