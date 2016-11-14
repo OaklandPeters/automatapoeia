@@ -12,6 +12,14 @@ Unit-tests
 * Get test-runner to run the law-tests I've already learned
 * Do NOT get distracted by writing or running unittests for anything else. Especially all of the categories without law-tests
 
+=======================
+THE RETURN
+=======================
+Completion: Monad --> Sequence/ImmutableSequence --> Vector/ImmutableVector --> Manifold
+After completing Manifold, return to the actual automatapoeia work, and get that working for the 2d case.
+
+
+
 Todo:
 ============================
 * Copy out @todo comments from manifold.ts into this document

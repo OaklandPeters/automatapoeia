@@ -12,15 +12,6 @@ Function-Based Types
 ==========================
 
 
-Morphism
----------------
-Fancy function. Can be invoked as a JS function, but also has attributes and methods.
-Morphism = Callable & Function
-Basically always, we will want 'Morphism in category X', but I realize it isn't actually logically required.
-* See if I can define a Morphism class which returns the results from createMorphism()
-** I think I can make constructor functions in JS return arbitary stuff
-* I need to define the methods that are needed for a Morphism. Call, Compose, etc
-
 Identifiable
 --------------
 * Revisit this. The current one was written a long time ago.
@@ -34,7 +25,8 @@ Composable
 Category
 -------------------
 * Category = Identifiable + Composable + some laws + domain (usually implicit)
-* Add note - category doesn't actually say anything about the ability to apply functions inside the category
+* Add 'CategoryLaws' very similar to MonoidLaws
+* Add 'Callable' - and note this is not standardly included - category normally doesn't actually say anything about the ability to apply functions inside the category
 * Add Note: Category is the formal definition of the groups (ex Foldable) that we've been working from. Well, we can finally define it formally now.
 ** Take some time after adding this note - to note how it is that some of the categories fullfill the category-requirements. (IE they fullfill it from the Javascript native)
 * Nor does it say anything about making VALUES equatable
@@ -96,6 +88,8 @@ Unit-tests
 
 Applicative
 --------------------
+* MY INTUITION HERE: Applicative is basically just Functor + Morphisms in a Category + 'Call'
+** Note - Haskell doesn't make 'call' explicit.
 * I haven't thought about this yet
 * ? What is Haskell's definition of this? It will be nontrivial to dis-entangle Haskell's lazy evaluation from the algebra defining 'amap'
 * The name 'Applicative' is terrible, and I should really rename it.
@@ -151,8 +145,6 @@ after finishing functor - becuase it's a refined version of Mappable
 *** Example of something which is Mappable but not Foldable is network-parallelism, without a central combiner. Basically the 'map' without a 'reduce'.
 
 
-Mid-term Target Goals
-=============================================
 
 
 Traversable
@@ -237,6 +229,13 @@ Applies the generic function to built-in Javascript data-types
 ** Object: foldable, reducable, joina
 
 * 'Laws' - functions which express or check a law which must apply to the category. These are for rules that are not expressible in the type-system.
+
+
+=======================
+THE RETURN
+=======================
+Completion: Monad --> Sequence/ImmutableSequence --> Vector/ImmutableVector --> Manifold
+After completing Manifold, return to the actual automatapoeia work, and get that working for the 2d case.
 
 
 Long-term Desires
