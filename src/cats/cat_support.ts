@@ -62,7 +62,7 @@ class Exception implements Error {
 	/* Concrete implementation of the builtin Error interface */
 	constructor(
 		public name: string,
-		public message?: string,
+		public message: string,
 		public stack?: string) {
 	}
 }

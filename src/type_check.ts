@@ -22,7 +22,7 @@ StructuralCheck(value,
 
 /* Type Definitions
 ============================== */
-type KeyType = number|string;
+// type KeyType = number|string;
 type PathType = Array<KeyType>;
 
 class TypeAtom {
