@@ -1,5 +1,7 @@
 /**
- * 
+ * Fancy function. Can be invoked as a JS function, but also has attributes and methods.
+ * Morphism = Invokable & Function
+ * Basically always, we will want 'Morphism in category X', but I realize it isn't actually logically required. 
  *
  * My intention with this is that a Morphism, is a fancy function which
  * expresses both a function-like signature, and a class-like signature.
@@ -71,7 +73,17 @@ abstract class Morphism<A, B> implements IInvokable<A, B> {
 	}
 }
 
-function isMorphism<Input, Output, T>(
+
+/* Generic functions
+for each abstract method
+================================================ */
+function create<M extends IMorphism<T, A, B>, T extends IInvokable<A, B>, A, B>(
+	morphismClass: {create(_invokable: T): IMorphism<T, A, B> }, 
+	invokable: T): IMorphism<T, A, B> {
+	return morphismClass.create(invokable);
+}
+
+
 /* Type-Guards: Type-checking functions
 ================================================= */
 function isMorphism<T, Input, Output>(
@@ -88,46 +100,6 @@ function isMorphism<T, Input, Output>(
 	);		
 }
 
-
-
-
-// We cannot define a normal Morphism class or abstract class, and have
-// it act as a normal function.
-// BUT - we can define a factory function which will define something that
-// behaves the same way
-let Morphism = {
-	create: function createMorphism<A, B, T extends IInvokable<A, B>>(invokable: T): IMorphism<A, B, T> {
-		/**
-	     * We have two related objects.
-	     * invokable - an object in JS terms.
-	     *     This cannot be directly called via normal Javascript, although its methods can
-	     * morphism - constructed by this function.
-	     * 	   Usable as a normal Javascript function, but also has access to all attributes
-	     * 	   and methods of the 'invokable' object.
-	     *
-	     * This plays the role of a constructor for Morphism classes.
-	     */
-		function f(arg: A): B {
-			return this.invoke(arg);
-		}
-		let bound = f.bind(invokable);
-		bound.__proto__ = (invokable as any).__proto__;
-		return updateObject<Function, T>(bound, invokable) as IMorphism<A, B, T>;
-	},
-	is: function isMorphism<Input, Output, T>(value: any): this is IMorphism<Input, Output, T> {
-		/**
-		 * Since we cannot define an abstract base class for Morphism, this function
-		 * plays the role of Morphism.is
-		 */
-		
-	}
-};
-
-
-
-/* Generic functions
-for each abstract method
-================================================ */
 /* Laws
 Assertion functions expressing something which must
 be true about the category for it to be sensible, and
@@ -162,6 +134,11 @@ equivalents to this categories' method,
 for built-in Javascript types
 ====================================== */
 var Native = {
+	Function: function createFunctionMorphism<A, B>(f: (input: A) => B): IMorphism<Invokable<A, B>, A, B> {
+		let invokable = {
+			invoke()
+		}
+	}
 };
 
 /* Exports
