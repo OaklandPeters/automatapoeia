@@ -46,19 +46,19 @@ type IMorphism<T, Input, Output> = ((input: Input) => Output) & IInvokable<Input
 /* Abstract Base Classes
 with 'is' type-checking static method
 ========================================= */
-abstract class AdvancedMorphism<A, B> implements IInvokable<A, B> {
+abstract class Morphism<A, B> implements IInvokable<A, B> {
 	abstract invoke(input: A): B;
-	static create<A, B, T extends IInvokable<A, B>>(invokable: T): IMorphism<A, B, T> {
+	static create<T extends IInvokable<A, B>, A, B>(invokable: T): IMorphism<T, A, B> {
 		function f(arg: A): B {
 			return this.invoke(arg);
 		}
 		let bound = f.bind(invokable);
 		bound.__proto__ = (invokable as any).__proto__;
-		return updateObject<Function, T>(bound, invokable) as IMorphism<A, B, T>;
+		return updateObject<Function, T>(bound, invokable) as IMorphism<T, A, B>;
 	}
 	static is<Input, Output, T>(
 		value: any, category: {is: (value: any)=>boolean, new: (values: any[]) => T} = AnyType as any
-		): value is IMorphism<Input, Output, T> {
+		): value is IMorphism<T, Input, Output> {
 		/**
 		 * Since we cannot define an abstract base class for Morphism, this function
 		 * plays the role of Morphism.is
@@ -72,8 +72,11 @@ abstract class AdvancedMorphism<A, B> implements IInvokable<A, B> {
 }
 
 function isMorphism<Input, Output, T>(
+/* Type-Guards: Type-checking functions
+================================================= */
+function isMorphism<T, Input, Output>(
 	value: any, category: {is: (value: any)=>boolean, new: (values: any[]) => T} = AnyType as any
-	): value is IMorphism<Input, Output, T> {
+	): value is IMorphism<T, Input, Output> {
 	/**
 	 * Since we cannot define an abstract base class for Morphism, this function
 	 * plays the role of Morphism.is
@@ -125,10 +128,6 @@ let Morphism = {
 /* Generic functions
 for each abstract method
 ================================================ */
-
-/* Type-Guards: Type-checking functions
-================================================= */
-
 /* Laws
 Assertion functions expressing something which must
 be true about the category for it to be sensible, and
@@ -168,5 +167,6 @@ var Native = {
 /* Exports
 ==================== */
 export {
-	IMorphism, createMorphism
+	IMorphism, Morphism,
+	isMorphism
 }
