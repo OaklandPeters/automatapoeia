@@ -22,7 +22,6 @@
   "boss":         true,
   "debug":        false,
   "eqnull":       false,
-  "esnext":       true,
   "evil":         false,
   "expr":         false,
   "funcscope":    false,
@@ -55,6 +54,7 @@
   "prototypejs":  false,
   "rhino":        false,
   "wsh":          false,
+  "esversion":    6,
 
   /*** Legacy from JSLint ***/
   // Set these to `true` to enforce, or `false` to relax.
