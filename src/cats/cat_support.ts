@@ -45,6 +45,15 @@ type NativeKeyedCollections = (
 // Class<T> is used to refer to construction functions for a given class
 type Class<T> = {new(...values: Array<any>): T};
 
+/*  Constructible & Buildable are utility types, used to appease TypeScript
+	when calling this.constructor from methods. */
+interface Constructible<T> {
+	new (...args: any[]): T;
+};
+
+interface Buildable<T> extends Constructible<T>, Function {
+};
+
 
 /* TypeScript related utility functions
 =============================== */
@@ -232,7 +241,7 @@ class LawTests<Klass> extends UnitTests {
 export {
 	Native, Primitive, NativeClasses,
 	NativeMisc, NativeIndexedCollections, NativeKeyedCollections,
-	Class,
+	Class, Constructible, Buildable,
 	updateObject,
 	assertType, assert, Exception, AssertionException,
 	TestResultKind, ITestMethodSummary, ITestLog, TestMethodSummary,
