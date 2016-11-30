@@ -90,6 +90,7 @@ Applicative
 --------------------
 * MY INTUITION HERE: Applicative is basically just Functor + Morphisms in a Category + 'Call'
 ** Note - Haskell doesn't make 'call' explicit.
+* ADDITIONAL INTUITIVE: Applicative ALSO includes COMPOSE
 * I haven't thought about this yet
 * ? What is Haskell's definition of this? It will be nontrivial to dis-entangle Haskell's lazy evaluation from the algebra defining 'amap'
 * The name 'Applicative' is terrible, and I should really rename it.
@@ -143,15 +144,17 @@ after finishing functor - becuase it's a refined version of Mappable
 ** Combining the Ana of Append and Cata of Fold is sufficent to build the Map
 ** 'Map' doesn't imply either Append or Fold
 *** Example of something which is Mappable but not Foldable is network-parallelism, without a central combiner. Basically the 'map' without a 'reduce'.
-
+* For SOME monad-like class, 
 
 
 
 Traversable
 --------------------------------
-This is the next step after Monad.
-I'll need to make a decision about whether this will be built on top of Monad or not.
-Haskell does no-ish (it uses applicative). But 'yes' is simpler from my POV (which isn't using )
+* This is the next step after Monad.
+* I'll need to make a decision about whether this will be built on top of Monad or not.
+** I think it just needs: fold + map
+** You can do it via: append + 
+* Haskell does no-ish (it uses applicative). But 'yes' is simpler from my POV (which isn't using )
 Traversable = Monad + Foldable
 This is basically the interaction between monoid and foldable --> translate/build-up a structure.
 Haskell's Typeclass Hierarchy seems to take a different approach to this: https://wiki.haskell.org/Typeclassopedia . In it:
@@ -159,7 +162,9 @@ Haskell's Typeclass Hierarchy seems to take a different approach to this: https:
 	Traversable = Functor + Foldable + ~Applicative
 	Monad = Applicative + ~Monoid (monoid in the function, not the value)
 	Alternative = Applicative + Monoid
-
+* Defining map (functor) in terms of fold  and monoid
+** map(f, x) = foldr(compose(f, append), x, zero())
+** map(f, x) = reduce( (accumulator, element) -> append(accumulator, f(element)), zero)
 
 Note #1 - I vaguely recall reading something like "Traversable" is very similar/related to Monad logically, but for complicated historic/implementation reasons, is not actually related at the Typeclass level.
 Note #2 - Also, recall that Haskell Monads are not the same as Category Theory Monads.
