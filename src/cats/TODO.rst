@@ -3,6 +3,21 @@ Short-term Goals
 Should advanced me toward the mid-term goal of manifold.
 
 
+Unit-tests
+--------------------
+* Create concrete classes + law-test inside cats/test/
+** Identifiable
+** Monoid
+** Monad?
+* Do NOT get distracted by writing or running unittests for anything else. Especially all of the categories without law-tests
+* Maybe use: Unit-test library: unit.js: http://unitjs.com/guide/introduction.html
+* Confirm that the law-tests run via 'npm test src/cats/test/'
+** I think this won't work, because it needs to be compiled first
+** So, something like: 'gulp; npm test build/es5/cats/test/'
+* Update README.md with this info
+* I am dubious that my big pile of indirection used in construction of FunctionMorphism and morphism.Native.Function actually works. Try it out in a unit-test
+
+
 
 Back-fill
 -------------
@@ -76,14 +91,6 @@ Functor
 
 Mid-term Target Goals
 =============================================
-
-Unit-tests
---------------------
-* Find, install, learn a Javascript NPM unit-test package
-* Get test-runner to run the law-tests I've already learned
-* Do NOT get distracted by writing or running unittests for anything else. Especially all of the categories without law-tests
-* Unit-test library: unit.js: http://unitjs.com/guide/introduction.html
-* Test runner: Mocha: 
 
 
 Applicative
