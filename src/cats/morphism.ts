@@ -26,7 +26,7 @@
  *  morph.nonsense  // TS complains about this
  */
 import {IInvokable, Invokable, InvokableFunction} from './invokable';
-import {updateObject} from './cat_support';
+import {updateObject, Buildable, Constructible} from './cat_support';
 import {AnyType} from './typecheckable';
 
 
@@ -42,6 +42,7 @@ import {AnyType} from './typecheckable';
  *  
  * 
  */
+type IMorphismObject<T, Input, Output> = IInvokable<Input, Output> & T;
 type IMorphism<T, Input, Output> = ((input: Input) => Output) & IInvokable<Input, Output> & T;
 
 
@@ -49,14 +50,46 @@ type IMorphism<T, Input, Output> = ((input: Input) => Output) & IInvokable<Input
 with 'is' type-checking static method
 ========================================= */
 abstract class Morphism<A, B> implements IInvokable<A, B> {
+	/** 
+	 * Big weird quirk: direct instances of abstract class Morphism do not satisfy
+	 * IMorphism (because they don't count as a function), but the result of 
+	 * Morphism.create() - DO satisfy IMorphism.
+	 *
+	 * ... same goes for the morphism-domain 'T'
+	 * 
+	 * So the most correct 'constructor' for Morphism is actually 'create'.
+	 */
 	abstract invoke(input: A): B;
-	static create<T extends IInvokable<A, B>, A, B>(invokable: T): IMorphism<T, A, B> {
-		function f(arg: A): B {
-			return this.invoke(arg);
-		}
-		let bound = f.bind(invokable);
-		bound.__proto__ = (invokable as any).__proto__;
-		return updateObject<Function, T>(bound, invokable) as IMorphism<T, A, B>;
+	// static create<T extends IInvokable<A, B>, A, B>(invokable: T): IMorphism<T, A, B> {
+	// 	function f(arg: A): B {
+	// 		return this.invoke(arg);
+	// 	}
+	// 	let bound = f.bind(invokable);
+	// 	bound.__proto__ = (invokable as any).__proto__;
+	// 	return updateObject<Function, T>(bound, invokable) as IMorphism<T, A, B>;
+	// }
+	static create<A, B>(func: (input: A) => B): IMorphism<Morphism<A, B>, A, B> {
+		/**
+		 * Warning - when inheriting from abstract class Morphism this function 'create'
+		 * *should* execute correctly at run-time, BUT the signature inferred via
+		 * TypeScript will be too loose.
+		 *
+		 * Ex. 
+		 * class ListMorphism<A, B> extends Morphism<A, B> { //... }
+		 * let morph = new ListMorphism<string, number>((word: string) => word.length);
+		 * morph inferred to be:
+		 *    IMorphism<Morphism<string, number>, string, number>
+		 * But should be:
+		 *    IMorphism<ListMorphism<A, B>, A, B>
+		 *
+		 * You can over-ride the type-signature for 'create' on the child class to tighten this up
+		 * Ex.
+		 * class ListMorphism<A, B> extends Morphism<
+		 */
+		let _morphismObject = new (this.constructor as Constructible<Morphism<A, B>>)(func);
+		let bound = func.bind(_morphismObject);
+		bound.__proto__ = (_morphismObject as any).__proto__;
+		return updateObject<Function, Morphism<A, B>>(bound, _morphismObject) as IMorphism<Morphism<A, B>, A, B>;
 	}
 	static is<Input, Output, T>(
 		value: any, category: {is: (value: any)=>boolean, new: (values: any[]) => T} = AnyType as any
@@ -119,6 +152,19 @@ Functions that modify or decorate morphisms in this category
 /* Constructors
 convert between elements (~instances) of two categories
 ==================================== */
+
+//InvokableFunction
+class FunctionMorphism<A, B> extends InvokableFunction<A, B> implements Morphism<A, B> {
+	static create<A, B>(func: (input: A) => B): IMorphism<InvokableFunction<A, B>, A, B> {
+		type T = InvokableFunction<A, B>;
+		type ThisType = FunctionMorphism<A, B>;
+		let _morphismObject = new (this.constructor as Constructible<ThisType>)(func);
+		let bound = func.bind(_morphismObject);
+		bound.__proto__ = (_morphismObject as any).__proto__;
+		return updateObject<Function, T>(bound, _morphismObject) as IMorphism<T, A, B>;
+	}
+}
+
 var From = {
 };
 
@@ -134,10 +180,10 @@ equivalents to this categories' method,
 for built-in Javascript types
 ====================================== */
 var Native = {
-	Function: function createFunctionMorphism<A, B>(f: (input: A) => B): IMorphism<Invokable<A, B>, A, B> {
-		let invokable = {
-			invoke()
-		}
+	Function: function createFunctionMorphism<A, B>(
+		func: (input: A) => B
+		): FunctionMorphism<A, B> {
+		return FunctionMorphism.create(func);
 	}
 };
 
