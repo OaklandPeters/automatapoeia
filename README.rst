@@ -25,6 +25,7 @@ tsc
 Run unit-tests in `test/`:
 ```shell
 npm test
+npm test src/cats/test/
 ```
 
 

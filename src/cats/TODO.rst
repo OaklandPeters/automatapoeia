@@ -3,8 +3,21 @@ Short-term Goals
 Should advanced me toward the mid-term goal of manifold.
 
 
+MOST IMPORTANT: update Typescript version to 2.1
+--------------------------------------------------
+* to get access to:
+** object rest & spread
+** keyof and Lookup Types
+** Mapped types
+* Create a summary of what these are and how to use them
+
+
+
 Unit-tests
 --------------------
+* Get tests to run in src/cats/test by running gulp, then 'npm test build/es5/cats/test/'
+** After that is running, add a gulp command for this
+*** Look for an integration for my test framework + gulp. Which one am I using (that is triggered by 'npm test')
 * Create concrete classes + law-test inside cats/test/
 ** Identifiable
 ** Monoid
@@ -194,6 +207,13 @@ Note #2 - Also, recall that Haskell Monads are not the same as Category Theory M
 			(accumulator: U, element: U) => append(accumulator, element),
 			append(base.zero(), base)
 
+
+
+
+Concrete Instances Worthy of their Own File
+----------------------------------------------
+* Promise - the monad.
+** Connect this stuff to core methods (flattening, etc) http://solutionoptimist.com/2013/12/27/javascript-promise-chains-2/
 
 
 Complete dependencies for Manifold

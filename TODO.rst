@@ -1,9 +1,13 @@
 Working on: reorganize manifold.ts --> manifold/ directory, as interfaces, coordinate, base
 
-Priority
-============================
-Make a copy of cats/ in it's own repo - and assign a version number.
-I think I have already created a basic repo for this somewhere.
+
+MOST IMPORTANT: update Typescript version to 2.1
+--------------------------------------------------
+* to get access to:
+** object rest & spread
+** keyof and Lookup Types
+** Mapped types
+* Create a summary of what these are and how to use them
 
 
 Unit-tests
@@ -12,11 +16,14 @@ Unit-tests
 * Get test-runner to run the law-tests I've already learned
 * Do NOT get distracted by writing or running unittests for anything else. Especially all of the categories without law-tests
 
+
 =======================
 THE RETURN
 =======================
 Completion: Monad --> Sequence/ImmutableSequence --> Vector/ImmutableVector --> Manifold
-After completing Manifold, return to the actual automatapoeia work, and get that working for the 2d case.
+After completing Manifold:
+* Update repo 'theoryofcats' with the completed cateogries
+* return to the actual automatapoeia work, and get that working for the 2d case.
 
 
 
