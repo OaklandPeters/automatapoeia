@@ -1,20 +1,35 @@
 Working on: reorganize manifold.ts --> manifold/ directory, as interfaces, coordinate, base
 
 
-MOST IMPORTANT: update Typescript version to 2.1
---------------------------------------------------
-* to get access to:
-** object rest & spread
-** keyof and Lookup Types
-** Mapped types
-* Create a summary of what these are and how to use them
-
-
 Unit-tests
 --------------------
-* Find, install, learn a Javascript NPM unit-test package
-* Get test-runner to run the law-tests I've already learned
-* Do NOT get distracted by writing or running unittests for anything else. Especially all of the categories without law-tests
+* Review current test runner ('mocha') and hae it running on test/calculator-test.js (which I had running at some point)
+**  See in package.json: "scripts": { "test": "mocha" },
+* Do NOT get distracted by writing or running unittests for anything else. Especially all of the categories
+
+
+Targetted Unit-Tests
+--------------------------
+Intention is to provide goals for writing infrastructure tests, and to help maintain focus
+1. Get JS unit-test framework working
+2. Data initialization - non-random
+2.1. And the ability to check it. Ex. size of array
+2.2. Maybe do this on Manifold, maybe on lattice (which maybe simpler) 
+3. Data initialization - randomized from seed
+3.1. check data in specific cell / specific point
+3.2. confirm that all cell types are represented
+3.3. Check stats on allocation of point types
+4. Fetching all points in manifold
+5. Fetching neighborhood of a point
+6. Applying a rule to a single neighborhood
+7. Apply rule to entire Manifold
+7.1. Then check updated aggregrate state (as in test #3.2 & 3.3)
+
+
+
+Refocus
+-----------
+* Abandoning the cats/ - to focus on getting the actual project to work.
 
 
 =======================
