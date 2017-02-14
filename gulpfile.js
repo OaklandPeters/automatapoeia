@@ -5,7 +5,7 @@ var babel = require('gulp-babel');
 
 // Compile Typescript: src/ --> build/es6/
 //      Typescript compiler
-//      Destination folder specified in tsconfig.json
+//      Input files and destination folder specified in tsconfig.json
 //      Hinges on: typings/tsd.d.ts and src/main.ts
 gulp.task('build', function(callback){
     exec('tsc -p .', function(error, stdout, stderr) {

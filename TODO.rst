@@ -1,11 +1,22 @@
 Working on: reorganize manifold.ts --> manifold/ directory, as interfaces, coordinate, base
 
+Pipeline problems
+---------------------
+* END GOAL: Get mocha test to run on automated tests written in Typescript files in src/test/ - which import other modules defined in src/
+* Bug: 'fs: re-evaluating native module sources is not supported': To replicate - run `gulp` or `tsd query mocha`
+
+
 
 Unit-tests
 --------------------
 * Review current test runner ('mocha') and hae it running on test/calculator-test.js (which I had running at some point)
 **  See in package.json: "scripts": { "test": "mocha" },
-* Do NOT get distracted by writing or running unittests for anything else. Especially all of the categories
+** Follow tutorial: https://semaphoreci.com/community/tutorials/getting-started-with-node-js-and-mocha
+** Figure out how to make 'expected fail'
+** Update test/calculator-test.js as experiment
+* HARD: Figure out how to import things in test, while using build-pipeline
+** Tutorial: http://jonnyreeves.co.uk/2015/hello-typescript-and-mocha/
+** Add test/calculator-with-ts.ts to the ts build path
 
 
 Targetted Unit-Tests

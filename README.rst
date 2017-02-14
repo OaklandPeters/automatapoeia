@@ -8,10 +8,14 @@ Installation
 [@todo: Needs to walk through installing everything, with especial care for the TS/tsd parts.
 This needs to include installing npm, gulp, ts, tsd. Lookup my paper notes at home, and copy here]
 
+Install packages:
+```shell
+npm install
+```
 
 Shell Commands
 ----------------
-To run full build process, which includes running the TypeScript compiler:
+Full build process is defined in buildfile.js. To run this full build process, which includes running the TypeScript compiler:
 ```shell
 gulp
 ```
